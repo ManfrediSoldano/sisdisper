@@ -11,19 +11,23 @@ import sisdisper.server.model.comunication.GetGames;
 import sisdisper.server.model.comunication.ResponseAddToGame;
 
 public class RestServer {
-
-
+	  private static RestServer instance = null;
+	public static RestServer getIstance(){
+		 if(instance == null) {
+	         instance = new RestServer();
+	      }
+	      return instance;
+	}
+	
 	
 	private Comunication com;
 	private ArrayList<Game> games = new ArrayList<Game>();
 	public RestServer(){
-		games.add(new Game());
+
 	}
 	
-	public GetGames getGames(){
-		Game game = new Game();
-		game.setId("asd");
-		games.add(game);
+	public synchronized GetGames getGames(){
+		
 		
 		GetGames getgames = new GetGames();
 		getgames.setGames(games);
@@ -32,15 +36,21 @@ public class RestServer {
 	
 
 	public synchronized String postNewGame(Game game) {
-		
+		String id="id: ";
 		for(Game checkGame: games){
+			
+			id = id+"|"+ checkGame.getId();
 			if(checkGame.getId().equals(game.getId())){
+				 System.out.println("Game already exist");
 				return "Game already exists";
+			
 			} 
 		}
 		
-		games.add(game);
-		return "Game added";		
+		if(games.add(game))
+		return "Game added" +id + "   "+games.size() + " | Game id: "+game.getId();		
+		
+		return "En error occured";
 	}
 
 	public synchronized ResponseAddToGame addMeOnAGame(AddToGame add) {

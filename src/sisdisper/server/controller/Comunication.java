@@ -28,8 +28,9 @@ import sisdisper.server.model.comunication.ResponseAddToGame;
 public class Comunication extends Observable {
 	private RestServer rest;
 
-	public Comunication(){
-		rest = new RestServer();
+	public Comunication() {
+		
+		RestServer.getIstance();
 	}
 	  // This method is called if XML is request
 	  
@@ -38,14 +39,14 @@ public class Comunication extends Observable {
 	  @Produces(MediaType.APPLICATION_XML)
 	  public GetGames sayXMLHello() {
 
-		return rest.getGames();
+		return RestServer.getIstance().getGames();
 	  }
 	  
 	  @POST
 	  @Path("/post")
 	  @Consumes(MediaType.APPLICATION_XML)
 	  public String newGame(Game game){
-		  return rest.postNewGame(game);
+		  return RestServer.getIstance().postNewGame(game);
 		  
 	  }
 	  
@@ -53,7 +54,7 @@ public class Comunication extends Observable {
 	  @Path("/put")
 	  @Consumes(MediaType.APPLICATION_XML)
 	  public ResponseAddToGame addMeOnAGame(AddToGame game){
-		  return rest.addMeOnAGame(game);
+		  return RestServer.getIstance().addMeOnAGame(game);
 		  
 	  }
 	  
@@ -61,7 +62,7 @@ public class Comunication extends Observable {
 	  @Path("/delete")
 	  @Consumes(MediaType.APPLICATION_XML)
 	  public String deleteMeFromTheGame(DeleteMe player){
-		  return rest.deleteMeFromTheGame(player);
+		  return RestServer.getIstance().deleteMeFromTheGame(player);
 		  
 	  }
 	  
