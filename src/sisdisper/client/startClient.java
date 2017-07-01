@@ -1,24 +1,17 @@
 package sisdisper.client;
 
-import sisdisper.server.model.Game;
-import sisdisper.server.model.comunication.GetGames;
+import sisdisper.client.model.Buffer;
 
 public class startClient {
 
-	public static void main(String[] args)  {
-		ClientToServerCommunication com = new ClientToServerCommunication();
-		com.getGamesFromServer();
+	
+	public static void main(String[] args) {
+		BufferController buffercontroller = new BufferController();
+		Buffer buffer = new Buffer();
+		buffer.setBufferController(buffercontroller);	
 		
-		Game game = new Game();
-		game.setId("sfsf");
-		
-		com.createNewGame(game);
-		GetGames games = com.getGamesFromServer();
-		for(Game checkGame: games.getGames()){
-		      System.out.println(checkGame.getId());
-
-		}
 		
 	}
-	
+
+
 }

@@ -1,7 +1,9 @@
 package sisdisper.server.model.comunication;
 
-import sisdisper.server.model.Game;
+import javax.xml.bind.annotation.XmlRootElement;
 
+import sisdisper.server.model.Game;
+@XmlRootElement
 public class ResponseAddToGame {
 	private Game game = new Game();
 	

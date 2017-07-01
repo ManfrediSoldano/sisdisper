@@ -8,6 +8,8 @@ public class Player {
 	private String id;
 	private String ip;
 	private int port;
+	private int point;
+	private Coordinate coordinate; 
 	public String getId() {
 		return id;
 	}
@@ -35,6 +37,21 @@ public class Player {
 	
 	public Player(){
 	
+	}
+	
+	public Coordinate getCoordinate() {
+		return coordinate;
+	}
+	 @XmlElement
+	public void setCoordinate(Coordinate coordinate) {
+		this.coordinate = coordinate;
+	}
+	public int getPoint() {
+		return point;
+	}
+	 @XmlElement
+	public void setPoint(int point) {
+		this.point = point;
 	}
 	
 	

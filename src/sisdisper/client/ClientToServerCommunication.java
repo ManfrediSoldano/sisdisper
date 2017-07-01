@@ -15,7 +15,10 @@ import org.glassfish.jersey.client.ClientConfig;
 
 import sisdisper.server.model.Game;
 import sisdisper.server.model.Player;
+import sisdisper.server.model.comunication.AddToGame;
+import sisdisper.server.model.comunication.DeleteMe;
 import sisdisper.server.model.comunication.GetGames;
+import sisdisper.server.model.comunication.ResponseAddToGame;
 
 
 
@@ -52,6 +55,47 @@ public class ClientToServerCommunication {
 		      WebTarget service = client.target(getBaseURI());
 		      String game_received = service.path("post").request(MediaType.APPLICATION_XML).post(Entity.entity(game,MediaType.APPLICATION_XML),String.class);
 		      //String game = service.path("get").request().accept(MediaType.APPLICATION_XML).get(String.class);
+		      //System.out.println(game_received);
+		      return game_received;
+		   } catch (Exception e) {
+
+			e.printStackTrace();
+			return null;
+		  }
+		
+	}
+	
+	public ResponseAddToGame putMeOnaGame(AddToGame game){
+		try {
+
+			 ClientConfig config = new ClientConfig();
+			 
+			 
+		      Client client = ClientBuilder.newClient(config);
+		      WebTarget service = client.target(getBaseURI());
+		      ResponseAddToGame game_received = service.path("put").request(MediaType.APPLICATION_XML).put(Entity.entity(game,MediaType.APPLICATION_XML),ResponseAddToGame.class);
+		      //String game = service.path("get").request().accept(MediaType.APPLICATION_XML).get(String.class);
+		     
+		      return game_received;
+		   } catch (Exception e) {
+
+			e.printStackTrace();
+			return null;
+		  }
+		
+	}
+	
+	
+	public String deleteMe(String playerid, String gameid){
+		try {
+
+			 ClientConfig config = new ClientConfig();
+			 
+			 
+		      Client client = ClientBuilder.newClient(config);
+		      WebTarget service = client.target(getBaseURI());
+		      String game_received = service.path("delete").path(playerid).path(gameid).request(MediaType.APPLICATION_XML).delete(String.class);
+		      //String game = service.path("get").request().accept(MediaType.APPLICATION_XML).get(String.class);
 		      System.out.println(game_received);
 		      return game_received;
 		   } catch (Exception e) {
@@ -63,9 +107,11 @@ public class ClientToServerCommunication {
 	}
 	
 	
+	
 	private static URI getBaseURI() {
 	    return UriBuilder.fromUri("http://localhost:8080/sisdisper/rest/RestServer").build();
 	  }
+
 	
 	
 }

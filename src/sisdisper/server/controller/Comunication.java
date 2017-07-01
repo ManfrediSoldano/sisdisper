@@ -4,13 +4,14 @@ package sisdisper.server.controller;
 import java.util.ArrayList;
 import java.util.Observable;
 
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
-	
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
@@ -27,10 +28,11 @@ import sisdisper.server.model.comunication.ResponseAddToGame;
 @Path("/RestServer")
 public class Comunication extends Observable {
 	private RestServer rest;
-
+ 
 	public Comunication() {
 		
 		RestServer.getIstance();
+		
 	}
 	  // This method is called if XML is request
 	  
@@ -59,10 +61,11 @@ public class Comunication extends Observable {
 	  }
 	  
 	  @DELETE
-	  @Path("/delete")
+	  @Path("/delete/{userid}/{gameid}")
 	  @Consumes(MediaType.APPLICATION_XML)
-	  public String deleteMeFromTheGame(DeleteMe player){
-		  return RestServer.getIstance().deleteMeFromTheGame(player);
+	  public String deleteMeFromTheGame(@PathParam("userid") String userid, @PathParam("gameid") String gameid){
+	 
+		  return RestServer.getIstance().deleteMeFromTheGame(userid,gameid);
 		  
 	  }
 	  

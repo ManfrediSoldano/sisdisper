@@ -48,7 +48,7 @@ public class RestServer {
 		}
 		
 		if(games.add(game))
-		return "Game added" +id + "   "+games.size() + " | Game id: "+game.getId();		
+		return "ack";		
 		
 		return "En error occured";
 	}
@@ -77,12 +77,12 @@ public class RestServer {
 		return response;
 	}
 
-	public synchronized String deleteMeFromTheGame(DeleteMe toBeDeleted) {
+	public synchronized String deleteMeFromTheGame(String playerid, String gameid) {
 		for(Game checkGame: games){
-			if(checkGame.getId().equals(toBeDeleted.getGame().getId())){
+			if(checkGame.getId().equals(gameid)){
 				for(Player player: checkGame.getPlayerList()){
-					if(player.getId().equals(toBeDeleted.getPlayer().getId())){
-						checkGame.removePlayer(toBeDeleted.getPlayer().getId());
+					if(player.getId().equals(playerid)){
+						checkGame.removePlayer(playerid);
 						if(checkGame.getPlayerList().isEmpty()){
 							games.remove(checkGame);
 						}
