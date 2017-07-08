@@ -2,7 +2,12 @@ package sisdisper.client.model.action;
 
 import sisdisper.server.model.Player;
 
-public class ResponseMove implements Action{
+public class ResponseMove extends Action{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	public enum Response {
 		ACK,

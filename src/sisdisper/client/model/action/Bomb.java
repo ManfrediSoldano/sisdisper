@@ -1,5 +1,10 @@
 package sisdisper.client.model.action;
 
-public class Bomb  implements Action {
+public class Bomb  extends Action {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 }

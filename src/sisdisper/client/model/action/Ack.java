@@ -2,7 +2,11 @@ package sisdisper.client.model.action;
 
 import sisdisper.server.model.Player;
 
-public class Ack implements Action {
+public class Ack extends Action {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	Player player;
 	Player sender;
 

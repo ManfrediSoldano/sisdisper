@@ -1,22 +1,17 @@
 package sisdisper.client.model.action;
 
-import sisdisper.server.model.Game;
 import sisdisper.server.model.Player;
 
-public class AddMeToGame  extends Action  {
+public class AddMeToYourClients extends Action {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	Player player;
-	Game game;
-	public Game getGame() {
-		return game;
-	}
+	/**
+	 * 
+	 */
 
-	public void setGame(Game game) {
-		this.game = game;
-	}
+	Player player;
 
 	public Player getPlayer() {
 		return player;
@@ -26,4 +21,6 @@ public class AddMeToGame  extends Action  {
 		this.player = player;
 	}
 	
+	
+
 }

@@ -1,15 +1,16 @@
 package sisdisper.client.socket;
 
-import java.io.StringWriter;
+
 import java.net.ServerSocket;
 import java.util.ArrayList;
 
+import sisdisper.client.model.action.Ack;
 import sisdisper.client.model.action.Action;
 import sisdisper.server.model.Player;
-import java.io.File;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
+
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * A server program which accepts requests from clients to capitalize strings.
@@ -24,7 +25,7 @@ import javax.xml.bind.Marshaller;
 public class Server implements Runnable {
 	private Thread t;
 	Player me = new Player();
-	private ArrayList<ServerClientsHandler> clients = new ArrayList<ServerClientsHandler>();
+	private static ArrayList<ServerClientsHandler> clients = new ArrayList<ServerClientsHandler>();
 	/**
 	 * Application method to run the server runs in an infinite loop listening
 	 * on port 9898. When a connection is requested, it spawns a new thread to
@@ -40,6 +41,7 @@ public class Server implements Runnable {
 			try {
 				while (true) {
 					ServerClientsHandler client = new ServerClientsHandler(listener.accept());
+					System.out.println("@@@@SERVER@@@@ Client added @@@@@@@@ ");
 					clients.add(client);
 					client.start();
 				}
@@ -60,31 +62,33 @@ public class Server implements Runnable {
 		this.me = me;
 	}
 
-	public void sendMessageToAll(Action action) throws JAXBException {
-		StringWriter sw = new StringWriter();
-		JAXBContext jaxbContext = JAXBContext.newInstance(Action.class);
-		Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+	public void sendMessageToAll(Action action) throws JsonProcessingException {
+		String saction = action.serialize();
 		
-		jaxbMarshaller.marshal(action, sw);
-		String xmlString = sw.toString();
+		ObjectMapper mapper = new ObjectMapper();
+		String jsonInString = mapper.writeValueAsString(saction);
+		System.out.println(jsonInString);
 		
 		for (ServerClientsHandler client: clients){
-			client.sendMessage(xmlString);
+			client.sendMessage(jsonInString);
 		}
 		
 	}
 	
-	public void sendMessageToPlayer(Player player, Action action) throws JAXBException{
-		StringWriter sw = new StringWriter();
-		JAXBContext jaxbContext = JAXBContext.newInstance(Action.class);
-		Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+	public void sendMessageToPlayer(Player player, Action action) throws JsonProcessingException{
+		String saction = action.serialize();
+     	ObjectMapper mapper = new ObjectMapper();
+		String jsonInString = mapper.writeValueAsString(saction);
 		
-		jaxbMarshaller.marshal(action, sw);
-		String xmlString = sw.toString();
+		if(action instanceof Ack){
+		System.out.println("@@@SERVER@@@ SENDING ACK for player: "+player.getId());
+		}
 		
 		for (ServerClientsHandler client: clients){
-			if(client.getClientNumber() == player.getPort() && client.getAddress().toString()==player.getIp()){
-			client.sendMessage(xmlString);
+			//System.out.println("@@@SERVER@@@ SENDING ACK for player: "+client.getPlayer_id());
+			if(client.getPlayer_id().equals(player.getId())){
+			 System.out.println("@@@SERVER@@@ SENDING to player"+player.getId()+" @@@@@@@  ");
+			 client.sendMessage(jsonInString);
 			}
 		}
 	}

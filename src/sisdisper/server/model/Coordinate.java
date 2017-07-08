@@ -1,9 +1,15 @@
 package sisdisper.server.model;
 
+import java.io.Serializable;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name="Coordinate")
-public class Coordinate {
+public class Coordinate implements Serializable {
+/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 private int x=-5;
 private int y=-5;
 public int getX() {

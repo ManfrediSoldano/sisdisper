@@ -5,11 +5,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import sisdisper.client.model.Buffer;
-import sisdisper.client.model.action.Action;
 import sisdisper.client.model.action.AddMeToGame;
+import sisdisper.client.model.action.CLINewPlayer;
 import sisdisper.client.model.action.CreateGame;
 import sisdisper.client.model.action.GetGamesFromServer;
-import sisdisper.client.model.action.NewPlayer;
+import sisdisper.client.model.action.MoveCLI;
 import sisdisper.server.model.Game;
 import sisdisper.server.model.Player;
 import sisdisper.server.model.comunication.GetGames;
@@ -23,7 +23,7 @@ public class CLI implements Runnable {
 	Boolean notInsideAGame = true;
 	Boolean lock = true;
 	private BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-	
+
 	public Thread getT() {
 		return t;
 	}
@@ -36,45 +36,57 @@ public class CLI implements Runnable {
 	@Override
 	public void run() {
 		try {
+			String address;
+			int port;
 			// Imposto il giocatore
 			System.out.println("Welcome to MMOG");
 			System.out.println("Set your unique username:");
 			String name = br.readLine();
-			System.out.println("Set your ip address:");
-			String address = br.readLine();
-			System.out.println("Set your port number:");
-			int port = getPort();
+			if (name.equals("ttest")) {
+				name = "Test";
+				address = "localhost";
+				port = 334;
+			} else if (name.equals("ptest")) {
+				name = "pTest";
+				address = "localhost";
+				port = 335;
+			} else {
+				System.out.println("Set your ip address:");
+				address = br.readLine();
+				port = getPort();
+			}
 			Player player = new Player();
 			player.setId(name);
 			player.setIp(address);
 			player.setPort(port);
-			NewPlayer newplayer = new NewPlayer();
+			CLINewPlayer newplayer = new CLINewPlayer();
 			newplayer.setPlayer(player);
 			buffer.addAction(newplayer);
 
-			/// CHiedo cosa vuole fare dopo
+			/// Chiedo cosa vuole fare dopo
 			System.out.println("Thanks for set your username, " + player.getId());
 			System.out.println();
 			System.out.println("Possible Actions:");
-			System.out.println("GetGames //return all active games from server");
-			System.out.println("AddMeOnAGame //Get inside a game");
-			System.out.println("CreateANewGame //Create a new game");
-			System.out.println("Help //Create a new game");			
+			System.out.println("1 GetGames //return all active games from server");
+			System.out.println("2 AddMeOnAGame //Get inside a game");
+			System.out.println("3 CreateANewGame //Create a new game");
+			System.out.println("Help //Create a new game");
 			System.out.println("All required inforamtion will be later asked");
 
 			while (notInsideAGame) {
 				try {
 
 					String action = br.readLine();
-					if (action.equals("GetGames")) {
-
+					if (action.equals("GetGames") || action.equals("1")) {
+						synchronized(buffer){
 						buffer.addAction(new GetGamesFromServer());
-						
+						}
+
 						synchronized (this) {
 							wait();
 						}
 
-					} else if (action.equals("AddMeOnAGame")) {
+					} else if (action.equals("AddMeOnAGame") || action.equals("2")) {
 						System.out.println("Which game?");
 						String gameid = br.readLine();
 						Game gametobeadded = new Game();
@@ -82,14 +94,15 @@ public class CLI implements Runnable {
 
 						AddMeToGame add = new AddMeToGame();
 						add.setGame(gametobeadded);
-
-						buffer.addAction(add);
+						synchronized (buffer) {
+							buffer.addAction(add);
+						}
 
 						synchronized (this) {
 							wait();
 						}
 
-					} else if (action.equals("CreateANewGame")) {
+					} else if (action.equals("CreateANewGame") || action.equals("3")) {
 						System.out.println("How do you want to call the game?");
 						String gameid = br.readLine();
 						System.out.println("Set a dimension:");
@@ -121,39 +134,65 @@ public class CLI implements Runnable {
 					e.printStackTrace();
 				}
 			}
-			
+
 			System.out.println();
 			System.out.println();
 			System.out.println("Possible Actions inside the game:");
 			System.out.println("Move up (you can also use 1)");
 			System.out.println("Move down (you can also use 2)");
 			System.out.println("Move left (you can also use 3)");
-			System.out.println("Move right (you can also use 4)");			
+			System.out.println("Move right (you can also use 4)");
 			System.out.println("Bomb (you can also use 5)");
-			
+
 			while (lock) {
 				String receivedCommand = br.readLine();
-				
-				if(receivedCommand.equals("Bomb")||receivedCommand.equals("5")){
-					
-				} else if(receivedCommand.equals("Move up")||receivedCommand.equals("1")){
-					
-				} else if(receivedCommand.equals("Move down")||receivedCommand.equals("2")){
-					
-				} else if(receivedCommand.equals("Move left")||receivedCommand.equals("3")){
-					
-				} else if(receivedCommand.equals("Move right")||receivedCommand.equals("4")){
-					
+
+				if (receivedCommand.equals("Bomb") || receivedCommand.equals("5")) {
+
+				} else if (receivedCommand.equals("Move up") || receivedCommand.equals("1")) {
+					MoveCLI movecli = new MoveCLI();
+					movecli.setWhere(MoveCLI.Where.UP);
+					synchronized (buffer) {
+						buffer.addAction(movecli);
+					}
+					synchronized (this) {
+						wait();
+					}
+				} else if (receivedCommand.equals("Move down") || receivedCommand.equals("2")) {
+					MoveCLI movecli = new MoveCLI();
+					movecli.setWhere(MoveCLI.Where.DOWN);
+					synchronized (buffer) {
+						buffer.addAction(movecli);
+					}
+					synchronized (this) {
+						wait();
+					}
+				} else if (receivedCommand.equals("Move left") || receivedCommand.equals("3")) {
+					MoveCLI movecli = new MoveCLI();
+					movecli.setWhere(MoveCLI.Where.LEFT);
+					synchronized (buffer) {
+						buffer.addAction(movecli);
+					}
+
+					synchronized (this) {
+						wait();
+					}
+				} else if (receivedCommand.equals("Move right") || receivedCommand.equals("4")) {
+					MoveCLI movecli = new MoveCLI();
+					movecli.setWhere(MoveCLI.Where.RIGHT);
+					synchronized (buffer) {
+						buffer.addAction(movecli);
+					}
+					synchronized (this) {
+						wait();
+					}
 				} else {
 					System.out.println("Wrong command");
 				}
-				
-			}
-			
-			
-			
 
-		} catch (IOException e) {
+			}
+
+		} catch (IOException | InterruptedException e) {
 		}
 
 	}
@@ -199,14 +238,19 @@ public class CLI implements Runnable {
 			System.out.println("Unfortunately we wasn't able to add you to the game : " + type.toString());
 		}
 	}
-	
-	public void returnCreated(String string, Boolean inside){
-		
+
+	public void returnCreated(String string, Boolean inside) {
+
 		System.out.println(string);
 		notInsideAGame = inside;
 	}
 
+	public void returnMove(String string) {
+		System.out.println(string);
+	}
 
+	public void returnBomb() {
 
+	}
 
 }

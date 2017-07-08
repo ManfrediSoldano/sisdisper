@@ -8,7 +8,8 @@ public class startClient {
 	public static void main(String[] args) {
 		BufferController buffercontroller = new BufferController();
 		Buffer buffer = new Buffer();
-		buffer.setBufferController(buffercontroller);	
+		
+		buffercontroller.start();
 		
 		
 	}

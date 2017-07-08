@@ -12,9 +12,15 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import sisdisper.client.model.Buffer;
 import sisdisper.client.model.action.Ack;
 import sisdisper.client.model.action.Action;
+import sisdisper.client.model.action.WelcomeNewPlayer;
 import sisdisper.server.model.Player;
 
 /**
@@ -35,6 +41,13 @@ public class Client extends Thread {
 	public void start() {
 		t = new Thread(this);
 		t.start();
+		buffer = new Buffer();
+		try {
+			connectToServer();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -45,6 +58,7 @@ public class Client extends Thread {
 	public Client(String ip, int port) {
 		this.ip = ip;
 		this.port = port;
+
 	}
 
 	public Client(Player player) {
@@ -76,24 +90,26 @@ public class Client extends Thread {
 
 	public void run() {
 		while (true) {
-			try {
-				String whil = in.nextLine();
+			
+				try {
 
-				setReceived_text(whil);
-			} catch (Exception exc) {
-
-			}
+					String whil = in.nextLine();
+					if (whil != null) {
+						setReceived_text(whil);
+					}
+				} catch (Exception exc) {
+					//System.out.println("@@@@CLIENT@@ ERROR  @@@@@@@ " + exc);
+				}
+			
 		}
 	}
 
-	public void send(Action action) throws JAXBException {
-		StringWriter sw = new StringWriter();
-		JAXBContext jaxbContext = JAXBContext.newInstance(Action.class);
-		Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+	public synchronized void send(Action action) throws JsonProcessingException {
+		String saction = action.serialize();
+		ObjectMapper mapper = new ObjectMapper();
+		String jsonInString = mapper.writeValueAsString(saction);
 
-		jaxbMarshaller.marshal(action, sw);
-		String xmlString = sw.toString();
-		out.println(xmlString);
+		out.println(jsonInString);
 		out.flush();
 
 	}
@@ -101,21 +117,38 @@ public class Client extends Thread {
 	public String getReceived_text() {
 
 		return received_text;
+
 	}
 
-	public void setReceived_text(String received_text) throws JAXBException {
-		JAXBContext jaxbContext = JAXBContext.newInstance(Action.class);
-		Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-		StringReader reader = new StringReader(received_text);
-		Action action = (Action) jaxbUnmarshaller.unmarshal(reader);
-	
+	public void setReceived_text(String received_text) throws JsonParseException, JsonMappingException, IOException {
+		System.out.println("@@@@CLIENT@@ RECEIVED NEW TEXT! @@@@@@@ ");
+		ObjectMapper mapper = new ObjectMapper();
+		String saction = mapper.readValue(received_text, String.class);
+		Action deser = new Action();
+		Action action = deser.deserialize(saction);
 		if (action instanceof Ack) {
 			synchronized (buffer) {
 				buffer.notifyAll();
-				return;
+				
 			}
 		}
-		buffer.addAction(action);
+
+		if (action instanceof WelcomeNewPlayer) {
+			System.out.println("@@@@CLIENT@@ WELCOME NEW PLAYER @@@@@@@ ");
+		}
+		if (action instanceof Ack) {
+			System.out.println("@@@@CLIENT@@ RECEIVED ACK @@@@@@@ ");
+		}
+
+		try {
+			synchronized (buffer) {
+
+				buffer.addAction(action, this);
+			}
+		} catch (JAXBException | InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 

@@ -1,11 +1,18 @@
 package sisdisper.client.model.action;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 import sisdisper.client.socket.Client;
 import sisdisper.server.model.Coordinate;
 import sisdisper.server.model.Player;
 
-public class AskPosition implements Action {
- Coordinate coordinate = new Coordinate();
+@XmlRootElement(name="AskPosition")
+public class AskPosition extends Action {
+ /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+Coordinate coordinate = new Coordinate();
  Client client;
  Player player;
 

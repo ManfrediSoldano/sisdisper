@@ -1,8 +1,11 @@
 package sisdisper.server.model.comunication;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 import sisdisper.server.model.Game;
 import sisdisper.server.model.Player;
 
+@XmlRootElement
 public class DeleteMe {
 	private Game game = new Game();
 	private Player player = new Player();

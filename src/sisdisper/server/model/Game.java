@@ -2,11 +2,19 @@ package sisdisper.server.model;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 @XmlRootElement(name="Game")
-public class Game {
+public class Game implements Serializable{
 
+
+	private static final long serialVersionUID = 1L;
 	private ArrayList<Player> playerList = new ArrayList<Player>();
+	public void setPlayerList(ArrayList<Player> playerList) {
+		this.playerList = playerList;
+	}
+
+
 	private String id;
 	private int dimension;
 	
@@ -39,6 +47,7 @@ public class Game {
 		playerList.add(player);
 	}
 	
+
 	public void removePlayer(String id){
 		for(Player checkPlayer: playerList){
 			if(checkPlayer.getId().equals(id)){

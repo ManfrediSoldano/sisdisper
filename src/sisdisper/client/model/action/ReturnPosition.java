@@ -4,7 +4,11 @@ import sisdisper.client.socket.Client;
 import sisdisper.server.model.Coordinate;
 import sisdisper.server.model.Player;
 
-public class ReturnPosition implements Action{
+public class ReturnPosition extends Action{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	Coordinate coordinate = new Coordinate();
 	 Client client;
 	 Player player;

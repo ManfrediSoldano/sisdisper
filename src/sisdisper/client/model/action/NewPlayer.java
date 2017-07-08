@@ -2,8 +2,12 @@ package sisdisper.client.model.action;
 
 import sisdisper.server.model.Player;
 
-public class NewPlayer  implements Action  {
- private Player player;
+public class NewPlayer  extends Action  {
+ /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+private Player player;
 
 public Player getPlayer() {
 	return player;

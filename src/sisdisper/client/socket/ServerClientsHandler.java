@@ -1,20 +1,20 @@
 package sisdisper.client.socket;
 
-import java.io.BufferedReader;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
+
 import java.io.PrintWriter;
-import java.io.StringReader;
+
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Scanner;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import sisdisper.client.model.Buffer;
 import sisdisper.client.model.action.Action;
+import sisdisper.client.model.action.AddMeToYourClients;
+import sisdisper.client.model.action.NewPlayer;
 
 public class ServerClientsHandler extends Thread {
 	 private Socket socket;
@@ -23,8 +23,18 @@ public class ServerClientsHandler extends Thread {
      Scanner in;
      InetAddress address;
      Buffer buffer;
+     private Thread t;
+     String player_id;
      
-     public InetAddress getAddress() {
+     public String getPlayer_id() {
+		return player_id;
+	 }
+
+	public void setPlayer_id(String id) {
+		this.player_id = id;
+	}
+
+	public InetAddress getAddress() {
 		return address;
 	}
 
@@ -54,8 +64,16 @@ public class ServerClientsHandler extends Thread {
       * and sending back the capitalized version of the string.
       */
      
+     public void start() {
+    	t = new Thread(this);
+ 		t.start();
+ 		buffer = new Buffer();
+    	 
+     }
+     
+     
      public void run() {
-         
+    
     	 
     	  try {
              in = new Scanner(socket.getInputStream());
@@ -81,18 +99,40 @@ public class ServerClientsHandler extends Thread {
 
      }
 
-     public void setReceived_text(String received_text) throws JAXBException {
- 		JAXBContext jaxbContext = JAXBContext.newInstance(Action.class);
- 		Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
- 		StringReader reader = new StringReader(received_text);
- 		Action action = (Action) jaxbUnmarshaller.unmarshal(reader);
+     public void setReceived_text(String received_text)  {
+  
+    	ObjectMapper mapper = new ObjectMapper();
  		
- 		buffer.addAction(action);
+		try {
+			String saction = mapper.readValue(received_text, String.class);
+			Action deser = new Action();
+			Action action = deser.deserialize(saction);
+			if(action instanceof NewPlayer){
+				System.out.println("@@@SERVERClientHandler@@@ NewPlayer received from: "+((NewPlayer) action).getPlayer().getId()+" @@@@@ ");
+				player_id=((NewPlayer) action).getPlayer().getId();
+			}
+			
+			if(action instanceof AddMeToYourClients){
+				System.out.println("@@@SERVERClientHandler@@@ AddMeToYourClients received from: "+((AddMeToYourClients) action).getPlayer().getId()+" @@@@@ ");
+				player_id= ((AddMeToYourClients) action).getPlayer().getId();
+			}
+			
+			synchronized(buffer){
+	 		buffer.addAction(action);
+			}	 		
+	 		
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+ 		
+ 		
  		
  	}
      
      
      public void sendMessage(String Message){
+			System.out.println("@@@SERVERClientHandler@@@ SENDING "+Message+" @@@@@ ");
+
     	 out.println(Message);
      }
 }

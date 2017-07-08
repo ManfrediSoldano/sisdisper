@@ -1,8 +1,13 @@
 package sisdisper.client.model.action;
 
 
-public class MoveCLI  implements Action  {
+public class MoveCLI  extends Action  {
  
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public enum Where {
 		UP,
 		DOWN,
