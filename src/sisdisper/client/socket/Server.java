@@ -42,7 +42,9 @@ public class Server implements Runnable {
 				while (true) {
 					ServerClientsHandler client = new ServerClientsHandler(listener.accept());
 					System.out.println("@@@@SERVER@@@@ Client added @@@@@@@@ ");
+					synchronized(clients){
 					clients.add(client);
+					}
 					client.start();
 				}
 			} finally {
@@ -67,29 +69,32 @@ public class Server implements Runnable {
 		
 		ObjectMapper mapper = new ObjectMapper();
 		String jsonInString = mapper.writeValueAsString(saction);
-		System.out.println(jsonInString);
+		
 		
 		for (ServerClientsHandler client: clients){
+		
 			client.sendMessage(jsonInString);
+			
 		}
 		
 	}
 	
-	public void sendMessageToPlayer(Player player, Action action) throws JsonProcessingException{
+	public synchronized void sendMessageToPlayer(Player player, Action action) throws JsonProcessingException{
 		String saction = action.serialize();
      	ObjectMapper mapper = new ObjectMapper();
 		String jsonInString = mapper.writeValueAsString(saction);
 		
 		if(action instanceof Ack){
-		System.out.println("@@@SERVER@@@ SENDING ACK for player: "+player.getId());
+		//System.out.println("@@@SERVER@@@ SENDING ACK for player: "+player.getId());
 		}
-		
+		synchronized(clients){
 		for (ServerClientsHandler client: clients){
 			//System.out.println("@@@SERVER@@@ SENDING ACK for player: "+client.getPlayer_id());
 			if(client.getPlayer_id().equals(player.getId())){
-			 System.out.println("@@@SERVER@@@ SENDING to player"+player.getId()+" @@@@@@@  ");
+			//System.out.println("@@@SERVER@@@ SENDING to player"+player.getId()+" @@@@@@@  ");
 			 client.sendMessage(jsonInString);
 			}
+		}
 		}
 	}
 

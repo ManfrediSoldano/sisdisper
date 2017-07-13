@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import sisdisper.client.model.Buffer;
 import sisdisper.client.model.action.Ack;
 import sisdisper.client.model.action.Action;
+import sisdisper.client.model.action.PassToken;
 import sisdisper.client.model.action.WelcomeNewPlayer;
 import sisdisper.server.model.Player;
 
@@ -121,30 +122,25 @@ public class Client extends Thread {
 	}
 
 	public void setReceived_text(String received_text) throws JsonParseException, JsonMappingException, IOException {
-		System.out.println("@@@@CLIENT@@ RECEIVED NEW TEXT! @@@@@@@ ");
+		//System.out.println("@@@@CLIENT@@ RECEIVED NEW TEXT! @@@@@@@ ");
 		ObjectMapper mapper = new ObjectMapper();
 		String saction = mapper.readValue(received_text, String.class);
 		Action deser = new Action();
 		Action action = deser.deserialize(saction);
-		if (action instanceof Ack) {
-			synchronized (buffer) {
-				buffer.notifyAll();
-				
-			}
-		}
 
-		if (action instanceof WelcomeNewPlayer) {
-			System.out.println("@@@@CLIENT@@ WELCOME NEW PLAYER @@@@@@@ ");
+
+		if (action instanceof PassToken) {
+		//System.out.println("@@@@CLIENT@@ WELCOME NEW Tokent @@@@@@@ ");
 		}
 		if (action instanceof Ack) {
-			System.out.println("@@@@CLIENT@@ RECEIVED ACK @@@@@@@ ");
+		System.out.println("@@@@CLIENT@@ RECEIVED ACK @@@@@@@ ");
 		}
 
 		try {
-			synchronized (buffer) {
-
-				buffer.addAction(action, this);
+			synchronized(buffer){
+				Buffer.addAction(action, this);
 			}
+			
 		} catch (JAXBException | InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

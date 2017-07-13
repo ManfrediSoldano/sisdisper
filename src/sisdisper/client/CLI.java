@@ -43,13 +43,29 @@ public class CLI implements Runnable {
 			System.out.println("Set your unique username:");
 			String name = br.readLine();
 			if (name.equals("ttest")) {
-				name = "Test";
+				name = "tTest";
 				address = "localhost";
 				port = 334;
 			} else if (name.equals("ptest")) {
 				name = "pTest";
 				address = "localhost";
 				port = 335;
+			}else if (name.equals("ytest")) {
+				name = "yTest";
+				address = "localhost";
+				port = 336;
+			} else if (name.equals("utest")) {
+				name = "uTest";
+				address = "localhost";
+				port = 337;
+			} else if (name.equals("itest")) {
+				name = "iTest";
+				address = "localhost";
+				port = 338;
+			} else if (name.equals("otest")) {
+				name = "oTest";
+				address = "localhost";
+				port = 339;
 			} else {
 				System.out.println("Set your ip address:");
 				address = br.readLine();
@@ -61,8 +77,9 @@ public class CLI implements Runnable {
 			player.setPort(port);
 			CLINewPlayer newplayer = new CLINewPlayer();
 			newplayer.setPlayer(player);
-			buffer.addAction(newplayer);
-
+			synchronized (buffer) {
+			Buffer.addAction(newplayer);
+			}
 			/// Chiedo cosa vuole fare dopo
 			System.out.println("Thanks for set your username, " + player.getId());
 			System.out.println();
@@ -78,8 +95,8 @@ public class CLI implements Runnable {
 
 					String action = br.readLine();
 					if (action.equals("GetGames") || action.equals("1")) {
-						synchronized(buffer){
-						buffer.addAction(new GetGamesFromServer());
+						synchronized (buffer) {
+							Buffer.addAction(new GetGamesFromServer());
 						}
 
 						synchronized (this) {
@@ -95,7 +112,7 @@ public class CLI implements Runnable {
 						AddMeToGame add = new AddMeToGame();
 						add.setGame(gametobeadded);
 						synchronized (buffer) {
-							buffer.addAction(add);
+							Buffer.addAction(add);
 						}
 
 						synchronized (this) {
@@ -114,7 +131,9 @@ public class CLI implements Runnable {
 						// Action object
 						CreateGame create = new CreateGame();
 						create.setGame(gameToBeCreated);
-						buffer.addAction(create);
+						synchronized (buffer) {
+							Buffer.addAction(create);
+						}
 						synchronized (this) {
 							wait();
 						}
@@ -153,7 +172,7 @@ public class CLI implements Runnable {
 					MoveCLI movecli = new MoveCLI();
 					movecli.setWhere(MoveCLI.Where.UP);
 					synchronized (buffer) {
-						buffer.addAction(movecli);
+						Buffer.addAction(movecli);
 					}
 					synchronized (this) {
 						wait();
@@ -162,7 +181,7 @@ public class CLI implements Runnable {
 					MoveCLI movecli = new MoveCLI();
 					movecli.setWhere(MoveCLI.Where.DOWN);
 					synchronized (buffer) {
-						buffer.addAction(movecli);
+						Buffer.addAction(movecli);
 					}
 					synchronized (this) {
 						wait();
@@ -171,7 +190,7 @@ public class CLI implements Runnable {
 					MoveCLI movecli = new MoveCLI();
 					movecli.setWhere(MoveCLI.Where.LEFT);
 					synchronized (buffer) {
-						buffer.addAction(movecli);
+						Buffer.addAction(movecli);
 					}
 
 					synchronized (this) {
@@ -181,7 +200,7 @@ public class CLI implements Runnable {
 					MoveCLI movecli = new MoveCLI();
 					movecli.setWhere(MoveCLI.Where.RIGHT);
 					synchronized (buffer) {
-						buffer.addAction(movecli);
+						Buffer.addAction(movecli);
 					}
 					synchronized (this) {
 						wait();

@@ -2,7 +2,7 @@ package sisdisper.client.model.action;
 
 import sisdisper.server.model.Player;
 
-public class AddMeToYourClients extends Action {
+public class AddMeToYourClients_NotPassToBuffer extends Action {
 	/**
 	 * 
 	 */
