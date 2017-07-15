@@ -65,7 +65,7 @@ public class BufferController implements Runnable {
 	private Boolean block = false;
 	private Boolean addingAPlayer = false;
 	public Boolean imFree = true;
-	private Boolean waiting_ack = false;
+	private Boolean test_something_changed = false;
 
 	CLI cli;
 
@@ -527,8 +527,6 @@ public class BufferController implements Runnable {
 	private void adviceOfMyPresence() {
 		// Check per verificare che tutti mi abbiano dato l'ok prima di andare
 		// avanti
-		waiting_ack = true;
-
 		for (Player player : mygame.getPlayerList()) {
 			if (!player.getId().equals(me.getId())) {
 				Client client = new Client(player);
@@ -701,6 +699,7 @@ public class BufferController implements Runnable {
 
 						addingAPlayer = true;
 						receivedNewPlayerContact((NewPlayer) actioninside);
+						test_something_changed=true;
 
 					} else if (actioninside instanceof NewPlayerResponse) {
 						System.out.println("##BUFFERcontroller### taking new player response #####");
@@ -712,6 +711,7 @@ public class BufferController implements Runnable {
 
 						newPLyaerConfirmedToHaveMyClientHandler((NewPlayerResponse) actioninside);
 						addingAPlayer = false;
+						test_something_changed=true;
 
 						return;
 					}
@@ -727,7 +727,7 @@ public class BufferController implements Runnable {
 					// ###### MOVE #####
 					if (action instanceof MoveCLI) {
 						System.out.println("##BUFFERcontroller### MOVE ACTION #####");
-
+						test_something_changed=true;
 						Boolean done = false;
 
 						// ###### UP #####
@@ -821,6 +821,7 @@ public class BufferController implements Runnable {
 
 						if (mygame.getPlayerList().size() != 1) {
 							if (!addingAPlayer) {
+								test_something_changed=true;
 								server.sendMessageToAll(new AskPosition());
 								tokenBlocker = true;
 							}
@@ -846,7 +847,11 @@ public class BufferController implements Runnable {
 					if (mygame.getPlayerList().size() != 1) {
 
 						try {
+							if(test_something_changed){
+								System.out.println("##BUFFERcontroller### PASSING THE TOKEN TO SOMEONE ELSE #####");
 
+								test_something_changed=false;
+							}
 							server.sendMessageToPlayer(next, new PassToken());
 						} catch (JsonProcessingException e) {
 							e.printStackTrace();

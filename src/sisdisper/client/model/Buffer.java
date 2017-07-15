@@ -43,8 +43,6 @@ public class Buffer {
 		}
 
 		if (!(action instanceof MoveCLI) && !(action instanceof Bomb) && !(action instanceof NewPlayer)) {
-			
-			
 			while (!bufferController.imFree) {
 			}
 			synchronized (actions) {
@@ -128,19 +126,19 @@ public class Buffer {
 
 			while (!bufferController.imFree) {
 			}
-			synchronized (actions) {
-				actions.add(action);
-			}
-			
+
 			synchronized (bufferController) {
 				if (action instanceof PassToken) {
 					bufferController.receivedToken();
 					return true;
-				}				
-			bufferController.notify();
+				}
+				synchronized (actions) {
+					actions.add(action);
+
+					bufferController.notify();
 
 					return true;
-				
+				}
 			}
 
 		}
