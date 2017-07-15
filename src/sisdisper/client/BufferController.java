@@ -65,8 +65,8 @@ public class BufferController implements Runnable {
 	private Boolean block = false;
 	private Boolean addingAPlayer = false;
 	public Boolean imFree = true;
-	
-	
+	private Boolean waiting_ack = false;
+
 	CLI cli;
 
 	public void start() {
@@ -79,7 +79,6 @@ public class BufferController implements Runnable {
 		cli = new CLI();
 		cli.setBuffer(buffer);
 		cli.start();
-		
 
 	}
 
@@ -94,14 +93,16 @@ public class BufferController implements Runnable {
 			if (!end) {
 
 				try {
+
 					synchronized (buffer) {
 						actions = buffer.getAllActions();
 					}
+
 					if (actions.size() == 0) {
-						
+						imFree = true;
+
 						wait();
-						imFree=true;
-						imFree=false;
+						imFree = false;
 					}
 				} catch (InterruptedException e) {
 
@@ -109,320 +110,347 @@ public class BufferController implements Runnable {
 				}
 			}
 
-			synchronized (buffer) {
-				action = buffer.getFirstAction();
-				
-				// ###### AGGIUNTA AD UN GIOCO ######
-				if (action instanceof AddMeToGame) {
-					if (!insideAGame) {
-						if (!me.getId().equals(null)) {
-							AddToGame addme = new AddToGame();
-							addme.setPlayer(me);
-							addme.setGame(((AddMeToGame) action).getGame());
-							ResponseAddToGame response = com.putMeOnaGame(addme);
-							ResponseAddToGame.Type type = response.getType();
+			System.out.println("###BUFFERController## GETTING FIRST ACTION #####");
 
-							if (type == ResponseAddToGame.Type.ACK) {
-								mygame = ((ResponseAddToGame) response).getGame();
-								cli.returnAdded(type);
-								synchronized (cli) {
-									cli.notify();
-								}
-								next = me;
-								prev = me;
-								adviceOfMyPresence();
+			action = buffer.getFirstAction();
+			System.out.println("###BUFFERController## AFTER FIRST ACTION #####");
 
-								insideAGame = true;
+			// ###### AGGIUNTA AD UN GIOCO ######
+			if (action instanceof AddMeToGame) {
+				if (!insideAGame) {
+					if (!me.getId().equals(null)) {
+						AddToGame addme = new AddToGame();
+						addme.setPlayer(me);
+						addme.setGame(((AddMeToGame) action).getGame());
+						ResponseAddToGame response = com.putMeOnaGame(addme);
+						ResponseAddToGame.Type type = response.getType();
+
+						if (type == ResponseAddToGame.Type.ACK) {
+							mygame = ((ResponseAddToGame) response).getGame();
+							cli.returnAdded(type);
+							synchronized (cli) {
+								cli.notify();
 							}
-							if (type != ResponseAddToGame.Type.ACK) {
-								cli.returnAdded(type);
-								synchronized (cli) {
-									cli.notify();
-								}
-							}
-						} else {
-							//// AGGIUNGERE RITORNO ERRORE////
+							next = me;
+							prev = me;
+							adviceOfMyPresence();
+
+							insideAGame = true;
 						}
-					} else {
-						cli.returnAdded(Type.AREADY_EXIST);
-						synchronized (cli) {
-							cli.notifyAll();
-						}
-					}
-				}
-
-				// ###### RITORNO DEI GIOCHI ######
-				else if (action instanceof GetGamesFromServer) {
-					GetGames games = com.getGamesFromServer();
-					cli.getGames(games);
-					synchronized (cli) {
-						cli.notifyAll();
-					}
-				}
-
-				// ###### NUOVO GIOCO ######
-				else if (action instanceof CreateGame) {
-					if (!insideAGame) {
-						if (!me.getId().equals(null)) {
-							Game game = ((CreateGame) action).getGame();
-							game.addPlayer(me);
-							String returnString = com.createNewGame(game);
-							if (returnString.equals("ack")) {
-								mygame = game;
-								cli.returnCreated("Game correctly created", false);
-								insideAGame = true;
-								next = me;
-								prev = me;
-								receivedToken();
-							}
-
-							else {
-								cli.returnCreated(returnString, true);
-							}
+						if (type != ResponseAddToGame.Type.ACK) {
+							cli.returnAdded(type);
 							synchronized (cli) {
 								cli.notify();
 							}
 						}
 					} else {
-						cli.returnCreated("WTF_Error#1: You are already inside a game! ", false);
+						//// AGGIUNGERE RITORNO ERRORE////
+					}
+				} else {
+					cli.returnAdded(Type.AREADY_EXIST);
+					synchronized (cli) {
+						cli.notifyAll();
+					}
+				}
+			}
+
+			// ###### RITORNO DEI GIOCHI ######
+			else if (action instanceof GetGamesFromServer) {
+				GetGames games = com.getGamesFromServer();
+				cli.getGames(games);
+				synchronized (cli) {
+					cli.notifyAll();
+				}
+			}
+
+			// ###### NUOVO GIOCO ######
+			else if (action instanceof CreateGame) {
+				if (!insideAGame) {
+					if (!me.getId().equals(null)) {
+						Game game = ((CreateGame) action).getGame();
+						game.addPlayer(me);
+						String returnString = com.createNewGame(game);
+						if (returnString.equals("ack")) {
+							mygame = game;
+							cli.returnCreated("Game correctly created", false);
+							insideAGame = true;
+							next = me;
+							prev = me;
+							receivedToken();
+						}
+
+						else {
+							cli.returnCreated(returnString, true);
+						}
 						synchronized (cli) {
 							cli.notify();
 						}
 					}
-				}
-				// ###### ELIMINAMI DAL GIOCO ######
-
-				else if (action instanceof DeleteMe) {
-					if (!token.getIsMine()) {
-
-						com.deleteMe(me.getId(), mygame.getId());
-
-					} else {
-						//// AGGIUNGERE RITORNO ERRORE////
-
-					}
-				}
-
-				// ###### RICEVUTO UN ACK ######
-
-				else if (action instanceof Ack) {
-					if (tokenBlocker) {
-						System.out.println("#BUFFERCONTROLLER## Aggiunto ACK #####");
-						numberAck++;
-						checKAll();
-					}
-				}
-				// ###### CREA NUOVO GIOCATORE ######
-				else if (action instanceof CLINewPlayer) {
-					me = ((CLINewPlayer) action).getPlayer();
-					server.setPlayer(me);
-					server.start();
+				} else {
+					cli.returnCreated("WTF_Error#1: You are already inside a game! ", false);
 					synchronized (cli) {
 						cli.notify();
 					}
-
 				}
+			}
+			// ###### ELIMINAMI DAL GIOCO ######
 
-				// ###### CONTROLLA LA RISPOSTA ALL'AGGIUNTA DI UN GIOCATORE
-				// ######
-				else if (action instanceof WelcomeNewPlayer) {
-					System.out.println("###BUFFERController## WELCOME NEW PLAYER #####");
+			// ###### RICEVUTO UN ACK ######
 
-					welcomeNewPlayer(action);
-
-				}
-				// ###### RICEVUTO l?ACK CHE INDICA DI AVER PROCESSATO
-				// CORRETTAMENTE
-				// IL NUOVO CLIENT DAL GIOCATORE TOKEN ######
-				else if (action instanceof AddMeToYourClients) {
-					System.out.println(
-							"###BUFFERController## RICEVUTA RICHIESTA CHE MI CONFERMA CHE IL TIPO CON IL TOKEN ORA E' INSERITO TRA I MIEI CLIENT #####");
-					NewPlayerResponse newp = new NewPlayerResponse();
-					newp.setPlayer(me);
-					try {
-						server.sendMessageToPlayer(((AddMeToYourClients) action).getPlayer(), newp);
-					} catch (JsonProcessingException e) {
-						e.printStackTrace();
-					}
-				}
-				// ###### RICEVUTO UN TOKEN ######
-				else if (action instanceof PassToken) {
-
-					receivedToken();
-				}
-
-				// ###### RICEVUTO UNA POSIZIONE ######
-				else if (action instanceof AskPosition) {
-					System.out.println("###BUFFERController## POSITION REQUESTED BY "
-							+ ((AskPosition) action).getClient().getId() + " #####");
-					ReturnPosition rtn = new ReturnPosition();
-					rtn.setCoordinate(me.getCoordinate());
-					try {
-						((AskPosition) action).getClient().send(rtn);
-					} catch (JsonProcessingException e) {
-						e.printStackTrace();
-					}
-
-				}
-				// ###### RICEVUTA RICHIESTA DI POSIZIONE ######
-				else if (action instanceof ReturnPosition) {
-					coordinate.add(((ReturnPosition) action).getCoordinate());
-					if (coordinate.size() == mygame.getPlayerList().size() - 1) {
-						Boolean ok = true;
-						while (ok) {
-
-							int x = ThreadLocalRandom.current().nextInt(0, mygame.getDimension());
-							int y = ThreadLocalRandom.current().nextInt(0, mygame.getDimension());
-							for (Coordinate coordinata : coordinate) {
-								if (coordinata != null) {
-									if (coordinata.getX() == x && coordinata.getY() == y) {
-										System.out.println("###BUFFERController## POSIZIONE GIA' OCCUPATA #####");
-										ok = false;
-									}
-								}
-							}
-							if (ok) {
-								ok = false;
-								Coordinate coordinata_player = new Coordinate();
-								coordinata_player.setX(x);
-								coordinata_player.setY(y);
-								me.setCoordinate(coordinata_player);
-								tokenBlocker = false;
-								cli.returnMove("New position--> x: " + me.getCoordinate().getX() + " and y: "
-										+ me.getCoordinate().getY());
-								receivedToken();
-
-							} else {
-								ok = true;
-							}
-						}
-
-					}
-				}
-
-				// ###### RESPONDING TO A MOVE REQUEST ######
-				else if (action instanceof MoveCom) {
-					System.out.println("###BUFFERController## RECEIVED A MOVE REQUEST FROM "+((MoveCom)action).getPlayer().getId()+" #####");
-					if (((MoveCom) action).getCoordinate().equal(me.getCoordinate())) {
-						ResponseMove response = new ResponseMove();
-						response.setPlayer(me);
-						response.setResponse(ResponseMove.Response.KILLED_ME);
-						cli.returnMove("Killed by" + ((MoveCom) action).getPlayer().getId());
-						try {
+			else if (action instanceof Ack) {
+				if (((Ack) action).getPlayer() != null) {
+					if (((Ack) action).getPlayer().getId().equals(me.getId())) {
+						numberAck++;
+						if (numberAck == (mygame.getPlayerList().size() - 2)) {
 							try {
-								((MoveCom) action).getClient().send(response);
+								System.out.println("#BUFFERCONTROLLER## ALL ACK PROCESSED #####");
+
+								server.sendMessageToPlayer(next, new Ack());
+								numberAck = 0;
 							} catch (JsonProcessingException e) {
 								e.printStackTrace();
 							}
-							DeleteMe deleteme = new DeleteMe();
-							deleteme.setPlayer(me);
-							deleteme.setNext(next);
-							deleteme.setPrev(prev);
-							server.sendMessageToAll(deleteme);
-							com.deleteMe(me.getId(), mygame.getId());
-							end = true;
-
-						} catch (JsonProcessingException e) {
-							e.printStackTrace();
 						}
-					} else {
-						ResponseMove response = new ResponseMove();
-						response.setPlayer(me);
-						response.setResponse(ResponseMove.Response.ACK);
+					}
+				}
+				if (tokenBlocker) {
+					System.out.println("#BUFFERCONTROLLER## Aggiunto ACK #####");
+
+					checKAll();
+				}
+			}
+			// ###### CREA NUOVO GIOCATORE ######
+			else if (action instanceof CLINewPlayer) {
+				me = ((CLINewPlayer) action).getPlayer();
+				server.setPlayer(me);
+				server.start();
+				synchronized (cli) {
+					cli.notify();
+				}
+
+			}
+
+			// ###### CONTROLLA LA RISPOSTA ALL'AGGIUNTA DI UN GIOCATORE
+			// ######
+			else if (action instanceof WelcomeNewPlayer) {
+				System.out.println("###BUFFERController## WELCOME NEW PLAYER #####");
+
+				welcomeNewPlayer(action);
+
+			}
+			// ###### RICEVUTO l?ACK CHE INDICA DI AVER PROCESSATO
+			// CORRETTAMENTE
+			// IL NUOVO CLIENT DAL GIOCATORE TOKEN ######
+			else if (action instanceof AddMeToYourClients) {
+				System.out.println(
+						"###BUFFERController## RICEVUTA RICHIESTA CHE MI CONFERMA CHE IL TIPO CON IL TOKEN ORA E' INSERITO TRA I MIEI CLIENT #####");
+				NewPlayerResponse newp = new NewPlayerResponse();
+				newp.setPlayer(me);
+				try {
+					server.sendMessageToPlayer(((AddMeToYourClients) action).getPlayer(), newp);
+				} catch (JsonProcessingException e) {
+					e.printStackTrace();
+				}
+			}
+			// ###### RICEVUTO UN TOKEN ######
+			else if (action instanceof PassToken) {
+
+				receivedToken();
+			}
+
+			// ###### RICEVUTO UNA POSIZIONE ######
+			else if (action instanceof AskPosition) {
+				System.out.println("###BUFFERController## POSITION REQUESTED BY "
+						+ ((AskPosition) action).getClient().getId() + " #####");
+
+				ReturnPosition rtn = new ReturnPosition();
+				rtn.setCoordinate(me.getCoordinate());
+				try {
+					((AskPosition) action).getClient().send(rtn);
+				} catch (JsonProcessingException e) {
+					e.printStackTrace();
+				}
+
+			}
+			// ###### RICEVUTA RICHIESTA DI POSIZIONE ######
+			else if (action instanceof ReturnPosition) {
+				coordinate.add(((ReturnPosition) action).getCoordinate());
+				if (coordinate.size() == mygame.getPlayerList().size() - 1) {
+					Boolean ok = true;
+					while (ok) {
+
+						int x = ThreadLocalRandom.current().nextInt(0, mygame.getDimension());
+						int y = ThreadLocalRandom.current().nextInt(0, mygame.getDimension());
+						for (Coordinate coordinata : coordinate) {
+							if (coordinata != null) {
+								if (coordinata.getX() == x && coordinata.getY() == y) {
+									System.out.println("###BUFFERController## POSIZIONE GIA' OCCUPATA #####");
+									ok = false;
+								}
+							}
+						}
+						if (ok) {
+							ok = false;
+							Coordinate coordinata_player = new Coordinate();
+							coordinata_player.setX(x);
+							coordinata_player.setY(y);
+							me.setCoordinate(coordinata_player);
+							tokenBlocker = false;
+							cli.returnMove("New position--> x: " + me.getCoordinate().getX() + " and y: "
+									+ me.getCoordinate().getY());
+							receivedToken();
+
+						} else {
+							ok = true;
+						}
+					}
+
+				}
+			}
+
+			// ###### RESPONDING TO A MOVE REQUEST ######
+			else if (action instanceof MoveCom) {
+				System.out.println("###BUFFERController## RECEIVED A MOVE REQUEST FROM "
+						+ ((MoveCom) action).getPlayer().getId() + " #####");
+				if (((MoveCom) action).getCoordinate().equal(me.getCoordinate())) {
+					ResponseMove response = new ResponseMove();
+					response.setPlayer(me);
+					response.setResponse(ResponseMove.Response.KILLED_ME);
+					cli.returnMove("Killed by" + ((MoveCom) action).getPlayer().getId());
+					try {
 						try {
 							((MoveCom) action).getClient().send(response);
 						} catch (JsonProcessingException e) {
 							e.printStackTrace();
 						}
+
+						DeleteMe deleteme = new DeleteMe();
+						deleteme.setPlayer(me);
+						deleteme.setNext(next);
+						deleteme.setPrev(prev);
+						deleteme.setSender(((MoveCom) action).getPlayer());
+						server.sendMessageToAll(deleteme);
+						com.deleteMe(me.getId(), mygame.getId());
+						end = true;
+
+					} catch (JsonProcessingException e) {
+						e.printStackTrace();
 					}
-				}
-
-				// ###### RESPONSE FROM A MOVE FROM ALL OTHER PEERS ######
-				else if (action instanceof ResponseMove) {
-					System.out.println("####BUFFERController## RECEIVED RESPONSE FROM "+((ResponseMove)action).getPlayer().getId()+" #### ");
-
-					responseMoves.add(((ResponseMove) action));
-					if (responseMoves.size() == mygame.getPlayerList().size() - 1) {
-						for (ResponseMove responseMove : responseMoves) {
-							if (responseMove.getResponse() == ResponseMove.Response.KILLED_ME) {
-								points++;
-								cli.returnMove("Killed: " + responseMove.getPlayer().getId());
-								PlayerReceivedAPoint point = new PlayerReceivedAPoint();
-								point.setPlayer(me);
-								point.setPoints(points);
-
-								try {
-									server.sendMessageToAll(point);
-								} catch (JsonProcessingException e) {
-									e.printStackTrace();
-								}
-
-							}
-						}
-						cli.returnMove("Move completed");
-						cli.returnMove("New position: X: "+me.getCoordinate().getX()+"Y:"+me.getCoordinate().getY());
-						cli.returnMove("Now you have an amount of: " + points);
-						responseMoves = new ArrayList<ResponseMove>();
-						synchronized (cli) {
-							cli.notify();
-						}
-						tokenBlocker = false;
-						receivedToken();
-					}
-
-				} else if (action instanceof PlayerReceivedAPoint) {
-					cli.returnMove("Player " + ((PlayerReceivedAPoint) action).getPlayer().getId()
-							+ " has just gained a point, now he have " + ((PlayerReceivedAPoint) action).getPoints()
-							+ " points");
-					cli.returnMove("You have " + points + " points");
-				}
-
-				// ###### ASKED DELETING ######
-				else if (action instanceof DeleteMe) {
-					receivedNewDeleteContact((DeleteMe) action);
-				}
-				// ###### CHECK IF EVERYONE HAVE DELETE IT ######
-				else if (action instanceof Deleted) {
-					int test = 0;
-					Boolean otherone = false;
-					deleted.add(((Deleted) action));
-					for (Deleted del : deleted) {
-						if (del.getPlayer().getId() == ((Deleted) action).getPlayer().getId()) {
-							test++;
-						} else {
-							otherone = true;
-						}
-					}
-					if (test == mygame.getPlayerList().size() - 1 && !otherone) {
-						block = false;
-					}
-
 				} else {
-					if (action != null) {
-						System.out.println("Errore: non ho elaborato: " + action.toString());
+					ResponseMove response = new ResponseMove();
+					response.setPlayer(me);
+					response.setResponse(ResponseMove.Response.ACK);
+					try {
+						((MoveCom) action).getClient().send(response);
+					} catch (JsonProcessingException e) {
+						e.printStackTrace();
 					}
 				}
 			}
+
+			// ###### RESPONSE FROM A MOVE FROM ALL OTHER PEERS ######
+			else if (action instanceof ResponseMove) {
+				System.out.println("####BUFFERController## RECEIVED RESPONSE FROM "
+						+ ((ResponseMove) action).getPlayer().getId() + " #### ");
+				Boolean killed = false;
+				responseMoves.add(((ResponseMove) action));
+				if (responseMoves.size() == mygame.getPlayerList().size() - 1) {
+					for (ResponseMove responseMove : responseMoves) {
+						if (responseMove.getResponse() == ResponseMove.Response.KILLED_ME) {
+							points++;
+							cli.returnMove("Killed: " + responseMove.getPlayer().getId());
+							PlayerReceivedAPoint point = new PlayerReceivedAPoint();
+							point.setPlayer(me);
+							point.setPoints(points);
+
+							try {
+								server.sendMessageToAll(point);
+							} catch (JsonProcessingException e) {
+								e.printStackTrace();
+							}
+							killed = true;
+							tokenBlocker = true;
+						}
+					}
+
+					if (!killed) {
+						tokenBlocker = false;
+						cli.returnMove("Move completed");
+					}
+
+					cli.returnMove("New position: X: " + me.getCoordinate().getX() + "Y:" + me.getCoordinate().getY());
+					cli.returnMove("Now you have an amount of: " + points);
+					responseMoves = new ArrayList<ResponseMove>();
+					synchronized (cli) {
+						cli.notify();
+					}
+					receivedToken();
+				}
+
+			} else if (action instanceof PlayerReceivedAPoint) {
+				cli.returnMove("Player " + ((PlayerReceivedAPoint) action).getPlayer().getId()
+						+ " has just gained a point, now he have " + ((PlayerReceivedAPoint) action).getPoints()
+						+ " points");
+				cli.returnMove("You have " + points + " points");
+			}
+
+			// ###### ASKED DELETING ######
+			else if (action instanceof DeleteMe) {
+				receivedNewDeleteContact((DeleteMe) action);
+			}
+			// ###### CHECK IF EVERYONE HAVE DELETE IT ######
+			else if (action instanceof Deleted) {
+
+				int test = 0;
+				Boolean otherone = false;
+
+				deleted.add(((Deleted) action));
+
+				for (Deleted del : deleted) {
+					System.out.println("###BUFFERController## Delete action" + del.getPlayer().getId() + " other: "
+							+ ((Deleted) action).getPlayer().getId());
+					if (del.getPlayer().getId() == ((Deleted) action).getPlayer().getId()) {
+						test++;
+					} else {
+						otherone = true;
+					}
+				}
+
+				if (test == mygame.getPlayerList().size() - 1 && !otherone) {
+					System.out.println("###BufferController### Deleted all");
+					deleted = new ArrayList<Deleted>();
+					block = false;
+
+					if (((Deleted) action).getSender().getId().equals(me.getId())) {
+						tokenBlocker = false;
+						cli.returnMove("Move completed");
+					}
+				}
+
+			} else {
+				if (action != null) {
+					System.out.println(
+							"####BufferController### -------!!!!!!--------  Errore: non ho elaborato: -------!!!!!!-------- "
+									+ action.getClass());
+				}
+			}
+
 		}
 
 	}
 
-	
-
 	private void checKAll() {
-		if (numberAck == mygame.getPlayerList().size() - 1) {
-			System.out.println("##BUFFERcontroller### ACK: ALL CHECKED #####");
-			numberAck = 0;
-			tokenBlocker = false;
-			try {
-				server.sendMessageToAll(new Ack());
-			} catch (JsonProcessingException e) {
 
-				e.printStackTrace();
-			}
-			receivedToken();
+		System.out.println("##BUFFERcontroller### ACK: ALL CHECKED #####");
 
+		tokenBlocker = false;
+		try {
+			server.sendMessageToAll(new Ack());
+		} catch (JsonProcessingException e) {
+
+			e.printStackTrace();
 		}
+		receivedToken();
 
 	}
 
@@ -455,7 +483,9 @@ public class BufferController implements Runnable {
 				System.out.println("##BUFFERcontroller### SENDING AN ACK TO: " + next.getId() + " #####");
 
 				try {
-					server.sendMessageToPlayer(((WelcomeNewPlayer) action).getSender(), new Ack());
+					Ack ack = new Ack();
+					ack.setPlayer(((WelcomeNewPlayer) action).getNewPlayer());
+					server.sendMessageToPlayer(((WelcomeNewPlayer) action).getNewPlayer(), ack);
 				} catch (JsonProcessingException e) {
 					e.printStackTrace();
 				}
@@ -465,10 +495,16 @@ public class BufferController implements Runnable {
 			System.out.println("##BUFFERcontroller### I WAS ADDED #####");
 			next = ((WelcomeNewPlayer) action).getNext();
 			prev = ((WelcomeNewPlayer) action).getPrev();
-			try {
-				server.sendMessageToPlayer(((WelcomeNewPlayer) action).getSender(), new Ack());
-			} catch (JsonProcessingException e) {
-				e.printStackTrace();
+
+			if (next.getId().equals(prev.getId())) {
+				try {
+					System.out.println("##BUFFERcontroller### SENDING ACK #####");
+					Ack ack = new Ack();
+					ack.setPlayer(((WelcomeNewPlayer) action).getNewPlayer());
+					server.sendMessageToPlayer(((WelcomeNewPlayer) action).getSender(), ack);
+				} catch (JsonProcessingException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 
@@ -477,7 +513,9 @@ public class BufferController implements Runnable {
 			System.out.println("##BUFFERcontroller### I'M THE NEXT ONE #####");
 			next = ((WelcomeNewPlayer) action).getNext();
 			try {
-				server.sendMessageToPlayer(((WelcomeNewPlayer) action).getSender(), new Ack());
+				Ack ack = new Ack();
+				ack.setPlayer(((WelcomeNewPlayer) action).getNewPlayer());
+				server.sendMessageToPlayer(((WelcomeNewPlayer) action).getNewPlayer(), ack);
 			} catch (JsonProcessingException e) {
 				e.printStackTrace();
 			}
@@ -487,6 +525,10 @@ public class BufferController implements Runnable {
 	}
 
 	private void adviceOfMyPresence() {
+		// Check per verificare che tutti mi abbiano dato l'ok prima di andare
+		// avanti
+		waiting_ack = true;
+
 		for (Player player : mygame.getPlayerList()) {
 			if (!player.getId().equals(me.getId())) {
 				Client client = new Client(player);
@@ -601,32 +643,44 @@ public class BufferController implements Runnable {
 	private void receivedNewDeleteContact(DeleteMe deletePlayer) {
 		block = true;
 		mygame.removePlayer(deletePlayer.getPlayer().getId());
-		if (deletePlayer.getNext().getId().equals(me.getId())) {
-			prev = deletePlayer.getPrev();
-		}
-		if (deletePlayer.getPrev().getId().equals(me.getId())) {
-			next = deletePlayer.getNext();
-		}
-		try {
-			server.sendMessageToAll(new Deleted());
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
+
+		if (mygame.getPlayerList().size() != 1) {
+			if (deletePlayer.getNext().getId().equals(me.getId())) {
+				prev = deletePlayer.getPrev();
+			}
+			if (deletePlayer.getPrev().getId().equals(me.getId())) {
+				next = deletePlayer.getNext();
+			}
+			try {
+				Deleted del = new Deleted();
+				del.setPlayer(deletePlayer.getPlayer());
+				del.setSender(deletePlayer.getSender());
+				server.sendMessageToAll(del);
+				System.out.println("##BUFFERcontroller### SENT message to all #####");
+			} catch (JsonProcessingException e) {
+				e.printStackTrace();
+			}
+		} else {
+			tokenBlocker = false;
 		}
 	}
 
-	private void receivedToken() {
+	public void receivedToken() {
 		Boolean first = true;
 
 		while (mygame.getPlayerList().size() == 1 || first || addingAPlayer) {
 			ArrayList<Action> listactions = new ArrayList<Action>();
 			first = false;
+			ArrayList<Action> temp;
 			if (!block) {
 				synchronized (buffer) {
-					ArrayList<Action> temp = buffer.getAllActionsThatNeedsAToken();
+
+					temp = buffer.getAllActionsThatNeedsAToken();
 					for (Action action : temp) {
 						listactions.add(action);
 					}
 				}
+				temp = null;
 
 				if (listactions.size() > 0) {
 					System.out.println("##BUFFERcontroller### ACTIONS: #####");
@@ -649,9 +703,13 @@ public class BufferController implements Runnable {
 						receivedNewPlayerContact((NewPlayer) actioninside);
 
 					} else if (actioninside instanceof NewPlayerResponse) {
+						System.out.println("##BUFFERcontroller### taking new player response #####");
+
 						synchronized (buffer) {
 							Buffer.deleteAction(actioninside);
 						}
+						System.out.println("##BUFFERcontroller### After deleting new player response  #####");
+
 						newPLyaerConfirmedToHaveMyClientHandler((NewPlayerResponse) actioninside);
 						addingAPlayer = false;
 
@@ -665,7 +723,7 @@ public class BufferController implements Runnable {
 					synchronized (buffer) {
 						action = Buffer.getFirstActionThatNeedAToken();
 					}
-					
+
 					// ###### MOVE #####
 					if (action instanceof MoveCLI) {
 						System.out.println("##BUFFERcontroller### MOVE ACTION #####");
@@ -676,56 +734,55 @@ public class BufferController implements Runnable {
 						if (((MoveCLI) action).getWhere() == MoveCLI.Where.UP) {
 							System.out.println("##BUFFERcontroller### UP #####");
 
-
-							if (me.getCoordinate().getY() + 1 < (mygame.getDimension()-1)) {
+							if (me.getCoordinate().getY() < (mygame.getDimension())) {
 								Coordinate coordinate = me.getCoordinate();
 								coordinate.setY(me.getCoordinate().getY() + 1);
 								me.setCoordinate(coordinate);
 								done = true;
 							} else {
 								cli.returnMove("You have reached the eow");
-								synchronized(cli){
+								synchronized (cli) {
 									cli.notify();
 								}
 							}
 						}
 						// ###### DOWN #####
 						else if (((MoveCLI) action).getWhere() == MoveCLI.Where.DOWN) {
-							if (me.getCoordinate().getY() - 1 > 0) {
+							if (me.getCoordinate().getY() > 0) {
 								Coordinate coordinate = me.getCoordinate();
 								coordinate.setY(me.getCoordinate().getY() - 1);
 								me.setCoordinate(coordinate);
 								done = true;
-							}else {
+							} else {
 								cli.returnMove("You have reached the eow");
-								synchronized(cli){
+								synchronized (cli) {
 									cli.notify();
 								}
 							}
 						} // ###### RIGHT #####
 						else if (((MoveCLI) action).getWhere() == MoveCLI.Where.RIGHT) {
-							if (me.getCoordinate().getX() + 1 < (mygame.getDimension()-1)) {
+							if (me.getCoordinate().getX() < (mygame.getDimension())) {
 								Coordinate coordinate = me.getCoordinate();
 								coordinate.setX(me.getCoordinate().getX() + 1);
 								me.setCoordinate(coordinate);
 								done = true;
-							}else {
+							} else {
 								cli.returnMove("You have reached the eow");
-								synchronized(cli){
+								synchronized (cli) {
 									cli.notify();
 								}
 							}
 						}
 						// ###### LEFT #####
 						else if (((MoveCLI) action).getWhere() == MoveCLI.Where.LEFT) {
-							if (me.getCoordinate().getX() - 1 > 0) {
+							if (me.getCoordinate().getX() > 0) {
 								Coordinate coordinate = me.getCoordinate();
-								coordinate.setX(me.getCoordinate().getX() + 1);
+								coordinate.setX(me.getCoordinate().getX() - 1);
 								me.setCoordinate(coordinate);
 								done = true;
-							}else {
+							} else {
 								cli.returnMove("You have reached the eow");
-								synchronized(cli){
+								synchronized (cli) {
 									cli.notify();
 								}
 							}
@@ -745,9 +802,7 @@ public class BufferController implements Runnable {
 								} catch (JsonProcessingException e) {
 									e.printStackTrace();
 								}
-								
 
-								
 							} else {
 								cli.returnMove("New position--> x: " + me.getCoordinate().getX() + " and y: "
 										+ me.getCoordinate().getY());
@@ -765,9 +820,9 @@ public class BufferController implements Runnable {
 					try {
 
 						if (mygame.getPlayerList().size() != 1) {
-							if(!addingAPlayer){
-							server.sendMessageToAll(new AskPosition());
-							tokenBlocker = true;
+							if (!addingAPlayer) {
+								server.sendMessageToAll(new AskPosition());
+								tokenBlocker = true;
 							}
 						} else {
 							int x = ThreadLocalRandom.current().nextInt(0, mygame.getDimension());

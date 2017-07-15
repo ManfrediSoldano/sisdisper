@@ -20,6 +20,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import sisdisper.client.model.Buffer;
 import sisdisper.client.model.action.Ack;
 import sisdisper.client.model.action.Action;
+import sisdisper.client.model.action.AskPosition;
+import sisdisper.client.model.action.NewPlayerResponse;
 import sisdisper.client.model.action.PassToken;
 import sisdisper.client.model.action.WelcomeNewPlayer;
 import sisdisper.server.model.Player;
@@ -90,8 +92,9 @@ public class Client extends Thread {
 	}
 
 	public void run() {
-		while (true) {
-			
+		try {
+			while (true) {
+
 				try {
 
 					String whil = in.nextLine();
@@ -99,9 +102,14 @@ public class Client extends Thread {
 						setReceived_text(whil);
 					}
 				} catch (Exception exc) {
-					//System.out.println("@@@@CLIENT@@ ERROR  @@@@@@@ " + exc);
+					// System.out.println("@@@@CLIENT@@ ERROR @@@@@@@ " + exc);
 				}
-			
+
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} catch (Throwable t) {
+			t.printStackTrace();
 		}
 	}
 
@@ -122,25 +130,32 @@ public class Client extends Thread {
 	}
 
 	public void setReceived_text(String received_text) throws JsonParseException, JsonMappingException, IOException {
-		//System.out.println("@@@@CLIENT@@ RECEIVED NEW TEXT! @@@@@@@ ");
+		// System.out.println("@@@@CLIENT@@ RECEIVED NEW TEXT! @@@@@@@ ");
 		ObjectMapper mapper = new ObjectMapper();
 		String saction = mapper.readValue(received_text, String.class);
 		Action deser = new Action();
 		Action action = deser.deserialize(saction);
 
-
-		if (action instanceof PassToken) {
-		//System.out.println("@@@@CLIENT@@ WELCOME NEW Tokent @@@@@@@ ");
-		}
+		
 		if (action instanceof Ack) {
-		System.out.println("@@@@CLIENT@@ RECEIVED ACK @@@@@@@ ");
+			System.out.println("@@@@CLIENT@@ RECEIVED ACK @@@@@@@ ");
 		}
+		if (action instanceof AskPosition) {
+			System.out.println("@@@@CLIENT@@ RECEIVED ASK POSITION @@@@@@@ ");
+		}
+		
 
 		try {
-			synchronized(buffer){
-				Buffer.addAction(action, this);
+			if (action instanceof NewPlayerResponse) {
+				System.out.println("@@@@CLIENT@@ NEW PLAYER RESPONSE @@@@@@@ ");
 			}
 			
+				Buffer.addAction(action, this);
+			
+			if (action instanceof NewPlayerResponse) {
+				System.out.println("@@@@CLIENT@@ AFTER ADDING A NEW PLAYER RESPONSE @@@@@@@ ");
+			}
+
 		} catch (JAXBException | InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

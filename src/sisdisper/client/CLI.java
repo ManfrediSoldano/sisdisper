@@ -36,6 +36,7 @@ public class CLI implements Runnable {
 	@Override
 	public void run() {
 		try {
+		
 			String address;
 			int port;
 			// Imposto il giocatore

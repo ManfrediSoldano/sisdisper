@@ -73,26 +73,30 @@ public class ServerClientsHandler extends Thread {
 	}
 
 	public void run() {
-
 		try {
-			in = new Scanner(socket.getInputStream());
-			out = new PrintWriter(socket.getOutputStream(), true);
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		while (true) {
 			try {
-				String whil = in.nextLine();
+				in = new Scanner(socket.getInputStream());
+				out = new PrintWriter(socket.getOutputStream(), true);
 
-				setReceived_text(whil);
-			} catch (Exception exc) {
-
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-		}
 
+			while (true) {
+				try {
+					String whil = in.nextLine();
+
+					setReceived_text(whil);
+				} catch (Exception exc) {
+
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
 	}
 
 	public void setReceived_text(String received_text) {
@@ -115,15 +119,14 @@ public class ServerClientsHandler extends Thread {
 				player_id = ((AddMeToYourClients) action).getPlayer().getId();
 			}
 			if (action instanceof AddMeToYourClients_NotPassToBuffer) {
-				System.out.println("@@@SERVERClientHandler@@@ AddMeToYourClients received from: "
+				System.out.println("@@@SERVERClientHandler@@@ AddMeToYourClients_NotPassToBuffer received from: "
 						+ ((AddMeToYourClients_NotPassToBuffer) action).getPlayer().getId() + " @@@@@ ");
 				player_id = ((AddMeToYourClients_NotPassToBuffer) action).getPlayer().getId();
 			}
 
 			if (!(action instanceof AddMeToYourClients_NotPassToBuffer)) {
-				synchronized (buffer) {
-					Buffer.addAction(action);
-				}
+				Buffer.addAction(action);
+
 			}
 
 		} catch (IOException e) {

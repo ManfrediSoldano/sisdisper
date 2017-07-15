@@ -11,6 +11,15 @@ public class DeleteMe  extends Action  {
 	Player player;
 	Player next;
 	Player prev;
+	Player sender;
+
+	public Player getSender() {
+		return sender;
+	}
+
+	public void setSender(Player sender) {
+		this.sender = sender;
+	}
 
 	public Player getNext() {
 		return next;

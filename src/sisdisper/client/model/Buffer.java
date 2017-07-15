@@ -35,25 +35,29 @@ public class Buffer {
 	private static ArrayList<Action> actions = new ArrayList<Action>();
 	private static ArrayList<Action> actionsThatNeedsAToken = new ArrayList<Action>();
 
-	public synchronized static Boolean addAction(Action action) {
-		synchronized (actionsThatNeedsAToken) {
+	public static Boolean addAction(Action action) {
+		
+		if (!(action instanceof PassToken)) {
+			System.out.println("##BUFFER### INSIDE ADDACTION (ONLY ACTION) FROM " + action.getClass() + "#####");
+
+		}
+
+		if (!(action instanceof MoveCLI) && !(action instanceof Bomb) && !(action instanceof NewPlayer)) {
 			
-			if (!(action instanceof MoveCLI) && !(action instanceof Bomb) && !(action instanceof NewPlayer)) {
-				synchronized (actions) {
-				
-				
+			
+			while (!bufferController.imFree) {
+			}
+			synchronized (actions) {
 
 				actions.add(action);
+			}
+			synchronized (bufferController) {
+				bufferController.notify();
+			}
 
-					synchronized (bufferController) {
-						while(!bufferController.imFree){
-						bufferController.notify();
-						}
-					}
-				}
-				return true;
-			} else {
-
+			return true;
+		} else {
+			synchronized (actionsThatNeedsAToken) {
 				if ((action instanceof NewPlayer)) {
 
 					System.out.println("##BUFFER### ADDED ON BUFFER: " + action.getClass() + " #####");
@@ -63,82 +67,97 @@ public class Buffer {
 					actionsThatNeedsAToken.add(action);
 				}
 			}
-			
-			return true;
 		}
+
+		return true;
+
 	}
 
-	public synchronized static Boolean addAction(Action action, Client client)
+	public static Boolean addAction(Action action, Client client)
 			throws JAXBException, InterruptedException, JsonProcessingException {
-		
+
+		if (!(action instanceof PassToken)) {
+			System.out.println("##BUFFER### INSIDE ADDACTION FROM " + action.getClass() + "#####");
+
+		}
+
 		if (!(action instanceof NewPlayerResponse) && !(action instanceof NewPlayer)) {
-			synchronized (bufferController) {
-			if (action instanceof WelcomeNewPlayer) {
+			synchronized (actions) {
 
-				for (Action deleteAction : actionsThatNeedsAToken) {
-					if (deleteAction instanceof NewPlayer) {
-						if (((NewPlayer) deleteAction).getPlayer().getId().equals(((WelcomeNewPlayer) action).getNewPlayer().getId())) {
+				if (action instanceof WelcomeNewPlayer) {
 
-							Boolean removed = actionsThatNeedsAToken.remove(deleteAction);
-							System.out.println("##BUFFER### REMOVED NEWPLAYER: "+removed+"#####");
-							break;
-							/*
-							 * Ack ack = new Ack();
-							 * ack.setPlayer(((WelcomeNewPlayer)
-							 * action).getNewPlayer()); client.send(ack);
-							 */
+					for (Action deleteAction : actionsThatNeedsAToken) {
+						if (deleteAction instanceof NewPlayer) {
+							if (((NewPlayer) deleteAction).getPlayer().getId()
+									.equals(((WelcomeNewPlayer) action).getNewPlayer().getId())) {
+								synchronized (actionsThatNeedsAToken) {
+									Boolean removed = actionsThatNeedsAToken.remove(deleteAction);
+
+									System.out.println("##BUFFER### REMOVED NEWPLAYER: " + removed + "#####");
+								}
+								break;
+								/*
+								 * Ack ack = new Ack();
+								 * ack.setPlayer(((WelcomeNewPlayer)
+								 * action).getNewPlayer()); client.send(ack);
+								 */
+							}
 						}
-					}
 
+					}
 				}
 			}
-			
 			if (action instanceof AskPosition) {
 				((AskPosition) action).setClient(client);
 			}
 			if (action instanceof MoveCom) {
 				((MoveCom) action).setClient(client);
 			}
-			
+
 			if (action instanceof ResponseMove) {
-				System.out.println("##BUFFER### RECEIVED A RESPONSE MOVE FROM : "+((ResponseMove)action).getPlayer().getId()+" #####");
+				System.out.println("##BUFFER### RECEIVED A RESPONSE MOVE FROM : "
+						+ ((ResponseMove) action).getPlayer().getId() + " #####");
 			}
 
-			
-				// TimeUnit.SECONDS.sleep(5);
+			// TimeUnit.SECONDS.sleep(5);
 			if (action instanceof WelcomeNewPlayer) {
-					System.out.println("##BUFFER### ADDED TO THE BUFFER A WELCOMETOPLAYER: SENDER: "
-							+ ((WelcomeNewPlayer) action).getSender().getId() + " NEW PLAYER: "
-							+ ((WelcomeNewPlayer) action).getNewPlayer().getId() + " #####");
+				System.out.println("##BUFFER### ADDED TO THE BUFFER A WELCOMETOPLAYER: SENDER: "
+						+ ((WelcomeNewPlayer) action).getSender().getId() + " NEW PLAYER: "
+						+ ((WelcomeNewPlayer) action).getNewPlayer().getId() + " #####");
 			}
-			
-			if (action instanceof PassToken) {
-				//System.out.println("##BUFFER### RECEIVED A PASS TOKEN #####");
-			}
-			actions.add(action);
-			
 
-			while(!bufferController.imFree){
+			while (!bufferController.imFree) {
+			}
+			synchronized (actions) {
+				actions.add(action);
+			}
+			
+			synchronized (bufferController) {
+				if (action instanceof PassToken) {
+					bufferController.receivedToken();
+					return true;
+				}				
 			bufferController.notify();
+
+					return true;
+				
 			}
-			
-			return true;
-			}
-			
-			
+
 		}
 
 		else {
+			synchronized (actionsThatNeedsAToken) {
 
-			System.out.println("##BUFFER### ADDED ON BUFFER: " + action.getClass() + " #####");
-			actionsThatNeedsAToken.add(action);
+				System.out.println("##BUFFER### ADDED ON BUFFER: " + action.getClass() + " #####");
+				actionsThatNeedsAToken.add(action);
+			}
 
 		}
 		return true;
 
 	}
 
-	public static synchronized Action getFirstActionThatNeedAToken() {
+	public static Action getFirstActionThatNeedAToken() {
 		synchronized (actionsThatNeedsAToken) {
 			if (!actionsThatNeedsAToken.isEmpty()) {
 
@@ -153,16 +172,17 @@ public class Buffer {
 		return null;
 	}
 
-	public synchronized Action getFirstAction() {
+	public Action getFirstAction() {
+		synchronized (actions) {
+			if (!actions.isEmpty()) {
+				Action action = new Action();
+				synchronized (actions) {
+					action = actions.get(0);
+					actions.remove(0);
+				}
+				return action;
 
-		if (!actions.isEmpty()) {
-			Action action = new Action();
-			synchronized (actions) {
-				action = actions.get(0);
-				actions.remove(0);
 			}
-			return action;
-
 		}
 
 		return null;
