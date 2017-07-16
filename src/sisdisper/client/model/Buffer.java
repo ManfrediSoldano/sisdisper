@@ -35,7 +35,7 @@ public class Buffer {
 	}
 
 	private static ArrayList<Action> actions = new ArrayList<Action>();
-	private static ArrayList<Action> actionsThatNeedsAToken = new ArrayList<Action>();
+	public static ArrayList<Action> actionsThatNeedsAToken = new ArrayList<Action>();
 
 	public  Boolean addAction(Action action) {
 
@@ -184,7 +184,7 @@ public class Buffer {
 			synchronized (bufferController) {
 				synchronized (actions) {
 					if (action instanceof PassToken) {
-
+						
 						bufferController.receivedToken();
 						return true;
 

@@ -279,13 +279,7 @@ public class BufferController implements Runnable {
 			}
 			// ###### RICEVUTO UN TOKEN ######
 			else if (action instanceof PassToken) {
-				if (((PassToken) action) != null) {
-					if (((PassToken) action).i == 1) {
-						synchronized (cli) {
-							cli.notify();
-						}
-					}
-				}
+				
 				receivedToken();
 			}
 
@@ -940,14 +934,13 @@ public class BufferController implements Runnable {
 
 	public void receivedToken() {
 		Boolean first = true;
-
+		
 		while (mygame.getPlayerList().size() == 1 || first || addingAPlayer) {
-			
 			ArrayList<Action> listactions = new ArrayList<Action>();
 			first = false;
 			ArrayList<Action> temp;
 			if (!block) {
-
+				
 				temp = Buffer.getAllActionsThatNeedsAToken();
 				for (Action action : temp) {
 					listactions.add(action);
@@ -963,7 +956,7 @@ public class BufferController implements Runnable {
 						}
 					}
 				}
-
+				
 				for (Action actioninside : listactions) {
 
 					if (actioninside instanceof NewPlayer) {
@@ -1032,7 +1025,7 @@ public class BufferController implements Runnable {
 					Action action;
 					
 						action = Buffer.getFirstActionThatNeedAToken();
-					
+						
 
 					// ###### MOVE #####
 					if (action instanceof MoveCLI) {
@@ -1153,6 +1146,7 @@ public class BufferController implements Runnable {
 						}
 					}
 				} else {
+
 					try {
 
 						if (mygame.getPlayerList().size() != 1) {
@@ -1181,6 +1175,7 @@ public class BufferController implements Runnable {
 
 					}
 				}
+
 				if (!tokenBlocker) {
 					if (mygame.getPlayerList().size() != 1) {
 

@@ -97,9 +97,9 @@ public class CLI implements Runnable {
 
 					String action = br.readLine();
 					if (action.equals("GetGames") || action.equals("1")) {
-						synchronized (buffer) {
+						
 							buffer.addAction(new GetGamesFromServer());
-						}
+						
 
 						synchronized (this) {
 							wait();
@@ -113,9 +113,9 @@ public class CLI implements Runnable {
 
 						AddMeToGame add = new AddMeToGame();
 						add.setGame(gametobeadded);
-						synchronized (buffer) {
+						
 							buffer.addAction(add);
-						}
+						
 
 						synchronized (this) {
 							wait();
@@ -133,9 +133,9 @@ public class CLI implements Runnable {
 						// Action object
 						CreateGame create = new CreateGame();
 						create.setGame(gameToBeCreated);
-						synchronized (buffer) {
+						
 							buffer.addAction(create);
-						}
+						
 						synchronized (this) {
 							wait();
 						}
@@ -170,39 +170,37 @@ public class CLI implements Runnable {
 
 				if (receivedCommand.equals("Bomb") || receivedCommand.equals("5")) {
 					Bomb bomb = new Bomb();
-					synchronized (buffer) {
 						buffer.addAction(bomb);
-					}
+					
 					
 
 				} else if (receivedCommand.equals("Move up") || receivedCommand.equals("1")) {
 					MoveCLI movecli = new MoveCLI();
 					movecli.setWhere(MoveCLI.Where.UP);
-					synchronized (buffer) {
 						buffer.addAction(movecli);
-					}
+					
 					
 				} else if (receivedCommand.equals("Move down") || receivedCommand.equals("2")) {
 					MoveCLI movecli = new MoveCLI();
 					movecli.setWhere(MoveCLI.Where.DOWN);
-					synchronized (buffer) {
+					
 						buffer.addAction(movecli);
-					}
+					
 					
 				} else if (receivedCommand.equals("Move left") || receivedCommand.equals("3")) {
 					MoveCLI movecli = new MoveCLI();
 					movecli.setWhere(MoveCLI.Where.LEFT);
-					synchronized (buffer) {
+					
 						buffer.addAction(movecli);
-					}
+					
 
 					
 				} else if (receivedCommand.equals("Move right") || receivedCommand.equals("4")) {
 					MoveCLI movecli = new MoveCLI();
 					movecli.setWhere(MoveCLI.Where.RIGHT);
-					synchronized (buffer) {
+					
 						buffer.addAction(movecli);
-					}
+					
 					
 				} else {
 					System.err.println("Wrong command");
