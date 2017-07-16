@@ -52,7 +52,7 @@ public class UpdateYourNextPrev  extends Action  {
 				int dim = alive.length;
 				Player[] newlist = new Player[dim];
 				for (int i = 0; i < dim; i++) {
-					System.out.println("Adding element");
+					//System.out.println("Adding element");
 					newlist[i] = alive[i];
 				}
 				newlist[dim] = player;

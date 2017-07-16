@@ -1,7 +1,6 @@
 package sisdisper.server.controller;
 
 
-import java.util.ArrayList;
 import java.util.Observable;
 
 
@@ -19,9 +18,7 @@ import javax.ws.rs.core.MediaType;
 
 
 import sisdisper.server.model.Game;
-import sisdisper.server.model.Player;
 import sisdisper.server.model.comunication.AddToGame;
-import sisdisper.server.model.comunication.DeleteMe;
 import sisdisper.server.model.comunication.GetGames;
 import sisdisper.server.model.comunication.ResponseAddToGame;
 

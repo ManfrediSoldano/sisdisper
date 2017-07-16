@@ -96,7 +96,7 @@ public class ClientToServerCommunication {
 		      WebTarget service = client.target(getBaseURI());
 		      String game_received = service.path("delete").path(playerid).path(gameid).request(MediaType.APPLICATION_XML).delete(String.class);
 		      //String game = service.path("get").request().accept(MediaType.APPLICATION_XML).get(String.class);
-		      System.out.println(game_received);
+		      System.out.println("###Client2ServerCom## "+game_received+ "####");
 		      return game_received;
 		   } catch (Exception e) {
 

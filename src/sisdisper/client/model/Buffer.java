@@ -39,12 +39,12 @@ public class Buffer {
 
 	public static Boolean addAction(Action action) {
 
-		if (!(action instanceof MoveCLI) && !(action instanceof Bomb) && !(action instanceof NewPlayer) && !(action instanceof AddBomb)) {
+		if (!(action instanceof MoveCLI) && !(action instanceof Bomb) && !(action instanceof NewPlayer)
+				&& !(action instanceof AddBomb)) {
 			System.out.println("##BUFFER### INSIDE ADDACTION (ONLY ACTION) FROM " + action.getClass() + "#####");
-			
-				while (!bufferController.imFree) {
-				}
-			
+
+			while (!bufferController.imFree) {
+			}
 
 			System.out.println("##BUFFER### FREE " + action.getClass() + "#####");
 			synchronized (actions) {
@@ -62,17 +62,18 @@ public class Buffer {
 			synchronized (actionsThatNeedsAToken) {
 				if ((action instanceof NewPlayer)) {
 
-					System.out.println("##BUFFER### ADDED ON BUFFER: " + action.getClass() + " #####");
 					actionsThatNeedsAToken.add(action);
+					System.out.println("##BUFFER### ADDED ON BUFFER (ONLY ACTION): " + action.getClass() + " #####");
 
-				}else if  ((action instanceof MoveCLI)) {
 
-					System.out.println("##BUFFER### ADDED ON BUFFER: " + action.getClass() + " #####");
+				} else if ((action instanceof MoveCLI)) {
+
 					actionsThatNeedsAToken.add(action);
+					System.out.println("##BUFFER### ADDED ON BUFFER: " + action.getClass() + " #####");
 
-				} 
-				
-				
+
+				}
+
 				else {
 					actionsThatNeedsAToken.add(action);
 				}
@@ -91,7 +92,8 @@ public class Buffer {
 
 		}
 
-		if (!(action instanceof NewPlayerResponse) && !(action instanceof NewPlayer) && !(action instanceof ExplodingBomb)) {
+		if (!(action instanceof NewPlayerResponse) && !(action instanceof NewPlayer)
+				&& !(action instanceof ExplodingBomb)) {
 			synchronized (actions) {
 
 				if (action instanceof WelcomeNewPlayer) {
@@ -116,7 +118,7 @@ public class Buffer {
 
 					}
 				}
-				
+
 				if (action instanceof AfterBombCheck) {
 
 					for (Action deleteAction : actionsThatNeedsAToken) {
@@ -139,10 +141,7 @@ public class Buffer {
 
 					}
 				}
-				
-				
-				
-				
+
 			}
 			if (action instanceof AskPosition) {
 				((AskPosition) action).setClient(client);
@@ -157,25 +156,36 @@ public class Buffer {
 			}
 
 			// TimeUnit.SECONDS.sleep(5);
+
 			if (action instanceof WelcomeNewPlayer) {
 				System.out.println("##BUFFER### ADDED TO THE BUFFER A WELCOMETOPLAYER: SENDER: "
 						+ ((WelcomeNewPlayer) action).getSender().getId() + " NEW PLAYER: "
 						+ ((WelcomeNewPlayer) action).getNewPlayer().getId() + " #####");
 			}
-
+			if (!(action instanceof PassToken)) {
+				System.out.println("##BUFFER### WAiting buffercontroller to be free ");
+			}
+			
 			while (!bufferController.imFree) {
+			}
+			if (!(action instanceof PassToken)) {
+				System.out.println("##BUFFER### buffercontroller is free ");
 			}
 
 			synchronized (bufferController) {
-				if (action instanceof PassToken) {
-					bufferController.receivedToken();
-					return true;
-				}
 				synchronized (actions) {
+					if (action instanceof PassToken) {
+					
+							bufferController.receivedToken();
+							return true;
+						
+					}
+
 					actions.add(action);
+					System.out.println("##BUFFER### ADDED ACTION IN ACTIONS " + action.getClass()
+							+ " TITAL NUMBER IN ACTIONS: " + actions.size() + "#####");
 
 					bufferController.notify();
-
 					return true;
 				}
 			}
@@ -183,12 +193,12 @@ public class Buffer {
 		}
 
 		else {
-			
-			
+
 			synchronized (actionsThatNeedsAToken) {
 
-				System.out.println("##BUFFER### ADDED ON BUFFER: " + action.getClass() + " #####");
 				actionsThatNeedsAToken.add(action);
+				System.out.println("##BUFFER### ADDED ON BUFFER: " + action.getClass() + " #####");
+
 			}
 
 		}
@@ -211,7 +221,7 @@ public class Buffer {
 		return null;
 	}
 
-	public Action getFirstAction() {
+	public static Action getFirstAction() {
 		synchronized (actions) {
 			if (!actions.isEmpty()) {
 				Action action = new Action();
@@ -235,7 +245,7 @@ public class Buffer {
 
 	public static ArrayList<Action> getAllActionsThatNeedsAToken() {
 		synchronized (actionsThatNeedsAToken) {
-			
+
 			return actionsThatNeedsAToken;
 		}
 	}

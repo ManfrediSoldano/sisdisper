@@ -48,7 +48,7 @@ public class AfterBombCheck extends Action {
 				int dim = list.length;
 				Player[] newlist = new Player[dim+1];
 				for (int i = 0; i < dim; i++) {
-					System.out.println("Adding element");
+					//System.out.println("Adding element");
 					newlist[i] = list[i];
 				}
 				newlist[dim] = player;
