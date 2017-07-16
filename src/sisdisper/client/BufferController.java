@@ -106,10 +106,15 @@ public class BufferController implements Runnable {
 
 					if (actions.size() == 0) {
 						
+						
 						synchronized (this) {
-							System.out.println("###BUFFERController## GOING IN WAIT #####");
 							imFree = true;
+							System.out.println("###BUFFERController## GOING IN WAIT #####");
+							synchronized(buffer){
+							buffer.notify();
+							}
 							wait();
+							
 							imFree = false;
 
 							System.out.println("###BUFFERController## WAKE UP #####");
@@ -501,6 +506,7 @@ public class BufferController implements Runnable {
 					update.setPlayer(afc.getPlayer());
 					update.alive = alive.toArray(new Player[alive.size()]);
 					update.setToken(me);
+					
 					try {
 						server.sendMessageToAll(update);
 					} catch (JsonProcessingException e) {
@@ -521,7 +527,7 @@ public class BufferController implements Runnable {
 
 					if (((AfterBombCheck) action).getArea() == me.getArea(mygame.getDimension())) {
 						cli.returnBomb("Bomb killed you.");
-						com.deleteMe(me.getId(), mygame.getId());
+					
 					} else {
 						afterbombcheck.add(me);
 						cli.returnBomb("Bomb didn't kill you.");
@@ -665,6 +671,7 @@ public class BufferController implements Runnable {
 		if (!tokenBlocker) {
 			try {
 				server.sendMessageToPlayer(afc.getToken(), new AckAfterBomb());
+				System.out.println("###Buffercontroller## Sent ackafterbomb to:" + afc.getToken() + "###");
 			} catch (JsonProcessingException e) {
 				e.printStackTrace();
 			}
@@ -1023,9 +1030,9 @@ public class BufferController implements Runnable {
 
 				if (me.getCoordinate() != null) {
 					Action action;
-					synchronized (buffer) {
+					
 						action = Buffer.getFirstActionThatNeedAToken();
-					}
+					
 
 					// ###### MOVE #####
 					if (action instanceof MoveCLI) {

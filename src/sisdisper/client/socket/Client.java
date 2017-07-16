@@ -156,7 +156,7 @@ public class Client extends Thread {
 				System.out.println("@@@@CLIENT@@ NEW PLAYER RESPONSE @@@@@@@ ");
 			}
 			
-				Buffer.addAction(action, this);
+				buffer.addAction(action, this);
 			
 			if (action instanceof NewPlayerResponse) {
 				System.out.println("@@@@CLIENT@@ AFTER ADDING A NEW PLAYER RESPONSE @@@@@@@ ");

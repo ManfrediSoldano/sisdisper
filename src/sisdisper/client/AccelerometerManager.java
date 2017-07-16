@@ -80,7 +80,7 @@ public class AccelerometerManager implements Runnable {
 					}
 					
 					bomb.area = area;
-					Buffer.addAction(bomb);
+					buffer.addAction(bomb);
 				
 				}
 				emai = actualema;

@@ -37,13 +37,20 @@ public class Buffer {
 	private static ArrayList<Action> actions = new ArrayList<Action>();
 	private static ArrayList<Action> actionsThatNeedsAToken = new ArrayList<Action>();
 
-	public static Boolean addAction(Action action) {
+	public  Boolean addAction(Action action) {
 
 		if (!(action instanceof MoveCLI) && !(action instanceof Bomb) && !(action instanceof NewPlayer)
 				&& !(action instanceof AddBomb)) {
 			System.out.println("##BUFFER### INSIDE ADDACTION (ONLY ACTION) FROM " + action.getClass() + "#####");
 
 			while (!bufferController.imFree) {
+				synchronized (this) {
+					try {
+						wait();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
 			}
 
 			System.out.println("##BUFFER### FREE " + action.getClass() + "#####");
@@ -65,12 +72,10 @@ public class Buffer {
 					actionsThatNeedsAToken.add(action);
 					System.out.println("##BUFFER### ADDED ON BUFFER (ONLY ACTION): " + action.getClass() + " #####");
 
-
 				} else if ((action instanceof MoveCLI)) {
 
 					actionsThatNeedsAToken.add(action);
 					System.out.println("##BUFFER### ADDED ON BUFFER: " + action.getClass() + " #####");
-
 
 				}
 
@@ -84,7 +89,7 @@ public class Buffer {
 
 	}
 
-	public static Boolean addAction(Action action, Client client)
+	public Boolean addAction(Action action, Client client)
 			throws JAXBException, InterruptedException, JsonProcessingException {
 
 		if (!(action instanceof PassToken)) {
@@ -165,9 +170,13 @@ public class Buffer {
 			if (!(action instanceof PassToken)) {
 				System.out.println("##BUFFER### WAiting buffercontroller to be free ");
 			}
-			
+
 			while (!bufferController.imFree) {
+				synchronized (this) {
+					wait();
+				}
 			}
+
 			if (!(action instanceof PassToken)) {
 				System.out.println("##BUFFER### buffercontroller is free ");
 			}
@@ -175,10 +184,10 @@ public class Buffer {
 			synchronized (bufferController) {
 				synchronized (actions) {
 					if (action instanceof PassToken) {
-					
-							bufferController.receivedToken();
-							return true;
-						
+
+						bufferController.receivedToken();
+						return true;
+
 					}
 
 					actions.add(action);

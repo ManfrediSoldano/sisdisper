@@ -80,7 +80,7 @@ public class CLI implements Runnable {
 			CLINewPlayer newplayer = new CLINewPlayer();
 			newplayer.setPlayer(player);
 			synchronized (buffer) {
-			Buffer.addAction(newplayer);
+			buffer.addAction(newplayer);
 			}
 			/// Chiedo cosa vuole fare dopo
 			System.err.println( "Thanks for set your username, " + player.getId());
@@ -98,7 +98,7 @@ public class CLI implements Runnable {
 					String action = br.readLine();
 					if (action.equals("GetGames") || action.equals("1")) {
 						synchronized (buffer) {
-							Buffer.addAction(new GetGamesFromServer());
+							buffer.addAction(new GetGamesFromServer());
 						}
 
 						synchronized (this) {
@@ -114,7 +114,7 @@ public class CLI implements Runnable {
 						AddMeToGame add = new AddMeToGame();
 						add.setGame(gametobeadded);
 						synchronized (buffer) {
-							Buffer.addAction(add);
+							buffer.addAction(add);
 						}
 
 						synchronized (this) {
@@ -134,7 +134,7 @@ public class CLI implements Runnable {
 						CreateGame create = new CreateGame();
 						create.setGame(gameToBeCreated);
 						synchronized (buffer) {
-							Buffer.addAction(create);
+							buffer.addAction(create);
 						}
 						synchronized (this) {
 							wait();
@@ -171,7 +171,7 @@ public class CLI implements Runnable {
 				if (receivedCommand.equals("Bomb") || receivedCommand.equals("5")) {
 					Bomb bomb = new Bomb();
 					synchronized (buffer) {
-						Buffer.addAction(bomb);
+						buffer.addAction(bomb);
 					}
 					
 
@@ -179,21 +179,21 @@ public class CLI implements Runnable {
 					MoveCLI movecli = new MoveCLI();
 					movecli.setWhere(MoveCLI.Where.UP);
 					synchronized (buffer) {
-						Buffer.addAction(movecli);
+						buffer.addAction(movecli);
 					}
 					
 				} else if (receivedCommand.equals("Move down") || receivedCommand.equals("2")) {
 					MoveCLI movecli = new MoveCLI();
 					movecli.setWhere(MoveCLI.Where.DOWN);
 					synchronized (buffer) {
-						Buffer.addAction(movecli);
+						buffer.addAction(movecli);
 					}
 					
 				} else if (receivedCommand.equals("Move left") || receivedCommand.equals("3")) {
 					MoveCLI movecli = new MoveCLI();
 					movecli.setWhere(MoveCLI.Where.LEFT);
 					synchronized (buffer) {
-						Buffer.addAction(movecli);
+						buffer.addAction(movecli);
 					}
 
 					
@@ -201,7 +201,7 @@ public class CLI implements Runnable {
 					MoveCLI movecli = new MoveCLI();
 					movecli.setWhere(MoveCLI.Where.RIGHT);
 					synchronized (buffer) {
-						Buffer.addAction(movecli);
+						buffer.addAction(movecli);
 					}
 					
 				} else {

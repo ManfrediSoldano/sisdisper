@@ -16,11 +16,11 @@ public class BombManager implements Runnable  {
 	public Server server;
 	private Player me;
 	private Area area;
-	
+	private Buffer buffer = new Buffer();
 	public void start() {
 		t = new Thread(this);
 		t.start();
-
+		
 		
 	}
 	
@@ -59,7 +59,7 @@ public class BombManager implements Runnable  {
 		}
 		
 		try {
-			Buffer.addAction(explodingBomb, null);
+			buffer.addAction(explodingBomb, null);
 		} catch (JsonProcessingException | JAXBException | InterruptedException e) {
 			
 			e.printStackTrace();

@@ -136,7 +136,7 @@ public class ServerClientsHandler extends Thread {
 			}
 
 			if (!(action instanceof AddMeToYourClients_NotPassToBuffer)) {
-				Buffer.addAction(action);
+				buffer.addAction(action);
 
 			}
 
