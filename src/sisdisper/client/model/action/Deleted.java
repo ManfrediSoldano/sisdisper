@@ -8,6 +8,9 @@ public class Deleted extends Action  {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	/**
+	 * 
+	 */
 	Player player;
 	Player next;
 	Player prev;

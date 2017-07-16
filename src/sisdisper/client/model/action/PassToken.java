@@ -8,6 +8,7 @@ public class PassToken extends Action {
 	 */
 	private static final long serialVersionUID = 1L;
 Token token = new Token();
+public int i=0;
 
 public Token getToken() {
 	return token;

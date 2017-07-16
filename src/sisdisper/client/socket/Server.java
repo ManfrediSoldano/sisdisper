@@ -72,7 +72,7 @@ public class Server implements Runnable {
 		
 		
 		for (ServerClientsHandler client: clients){
-		
+			System.out.println("@@@@SERVER@@@@ Sending "+action.getClass()+" to "+client.getPlayer_id()+"@@@@@@@@ ");
 			client.sendMessage(jsonInString);
 			
 		}

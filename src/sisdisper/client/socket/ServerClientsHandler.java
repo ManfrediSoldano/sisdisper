@@ -11,6 +11,7 @@ import java.util.Scanner;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import sisdisper.client.model.Buffer;
+import sisdisper.client.model.action.Ack;
 import sisdisper.client.model.action.Action;
 import sisdisper.client.model.action.AddMeToYourClients;
 import sisdisper.client.model.action.AddMeToYourClients_NotPassToBuffer;
@@ -121,7 +122,17 @@ public class ServerClientsHandler extends Thread {
 			if (action instanceof AddMeToYourClients_NotPassToBuffer) {
 				System.out.println("@@@SERVERClientHandler@@@ AddMeToYourClients_NotPassToBuffer received from: "
 						+ ((AddMeToYourClients_NotPassToBuffer) action).getPlayer().getId() + " @@@@@ ");
+				if(player_id.equals("")){
 				player_id = ((AddMeToYourClients_NotPassToBuffer) action).getPlayer().getId();
+				}
+			}
+			
+			if (action instanceof Ack) {
+				System.out.println("@@@SERVERClientHandler@@@ ACK received from: "
+						+ ((Ack) action).getSender().getId() + " @@@@@ ");
+				if(player_id.equals("")){
+					player_id = ((Ack) action).getSender().getId();
+					}
 			}
 
 			if (!(action instanceof AddMeToYourClients_NotPassToBuffer)) {
@@ -131,6 +142,8 @@ public class ServerClientsHandler extends Thread {
 
 		} catch (IOException e) {
 			e.printStackTrace();
+			System.err.println(received_text);
+
 		}
 
 	}

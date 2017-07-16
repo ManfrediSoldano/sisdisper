@@ -5,18 +5,22 @@ import java.util.ArrayList;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import sisdisper.client.model.Buffer;
-import sisdisper.client.model.Token;
 import sisdisper.client.model.action.Ack;
+import sisdisper.client.model.action.AckAfterBomb;
 import sisdisper.client.model.action.Action;
+import sisdisper.client.model.action.AddBomb;
 import sisdisper.client.model.action.AddMeToGame;
 import sisdisper.client.model.action.AddMeToYourClients;
 import sisdisper.client.model.action.AddMeToYourClients_NotPassToBuffer;
+import sisdisper.client.model.action.AdviceBomb;
+import sisdisper.client.model.action.AfterBombCheck;
 import sisdisper.client.model.action.AskPosition;
 import sisdisper.client.model.action.Bomb;
 import sisdisper.client.model.action.CLINewPlayer;
 import sisdisper.client.model.action.CreateGame;
 import sisdisper.client.model.action.DeleteMe;
 import sisdisper.client.model.action.Deleted;
+import sisdisper.client.model.action.ExplodingBomb;
 import sisdisper.client.model.action.GetGamesFromServer;
 import sisdisper.client.model.action.MoveCLI;
 import sisdisper.client.model.action.MoveCom;
@@ -26,7 +30,9 @@ import sisdisper.client.model.action.PassToken;
 import sisdisper.client.model.action.PlayerReceivedAPoint;
 import sisdisper.client.model.action.ResponseMove;
 import sisdisper.client.model.action.ReturnPosition;
+import sisdisper.client.model.action.UpdateYourNextPrev;
 import sisdisper.client.model.action.WelcomeNewPlayer;
+import sisdisper.client.model.action.Winner;
 import sisdisper.client.socket.Client;
 import sisdisper.client.socket.Server;
 import sisdisper.server.model.Coordinate;
@@ -41,16 +47,11 @@ import java.util.concurrent.ThreadLocalRandom;
 public class BufferController implements Runnable {
 	private ClientToServerCommunication com = new ClientToServerCommunication();
 	private Player me = new Player();
-	private Token token = new Token();
 	private Game mygame;
 	private Boolean insideAGame = false;
 	private Player next = new Player();
 	private Player prev = new Player();
 	private ArrayList<Client> clients = new ArrayList<Client>();
-
-	public Player getMe() {
-		return me;
-	}
 
 	private Server server = new Server();
 	private Thread t;
@@ -66,8 +67,11 @@ public class BufferController implements Runnable {
 	private Boolean addingAPlayer = false;
 	public Boolean imFree = true;
 	private Boolean test_something_changed = false;
-
+	private ArrayList<AckAfterBomb> ack = new ArrayList<AckAfterBomb>();
+	private UpdateYourNextPrev update= new UpdateYourNextPrev();
 	CLI cli;
+	
+	private int winpoint= 3;
 
 	public void start() {
 		t = new Thread(this);
@@ -82,8 +86,12 @@ public class BufferController implements Runnable {
 
 	}
 
+	public Player getMe() {
+		return me;
+	}
+
 	@Override
-	public synchronized void run() {
+	public void run() {
 		ArrayList<Action> actions;
 		Action action;
 		// Add me on a game
@@ -94,14 +102,13 @@ public class BufferController implements Runnable {
 
 				try {
 
-					synchronized (buffer) {
-						actions = buffer.getAllActions();
-					}
+					actions = Buffer.getAllActions();
 
 					if (actions.size() == 0) {
 						imFree = true;
-
-						wait();
+						synchronized (this) {
+							wait();
+						}
 						imFree = false;
 					}
 				} catch (InterruptedException e) {
@@ -194,6 +201,15 @@ public class BufferController implements Runnable {
 				}
 			}
 			// ###### ELIMINAMI DAL GIOCO ######
+			
+			else if (action instanceof Winner) {
+				cli.returnMove(((Winner)action).getPlayer().getId()+" HAS WON THIS MATCH!");
+				com.deleteMe(me.getId(), mygame.getId());
+				for(Client client: clients){
+					client.end=true;
+				}
+			}
+			// ###### ELIMINAMI DAL GIOCO ######
 
 			// ###### RICEVUTO UN ACK ######
 
@@ -254,7 +270,13 @@ public class BufferController implements Runnable {
 			}
 			// ###### RICEVUTO UN TOKEN ######
 			else if (action instanceof PassToken) {
-
+				if(((PassToken)action)!=null){
+					if(((PassToken)action).i==1){
+						synchronized(cli){
+							cli.notify();
+						}
+					}
+				}
 				receivedToken();
 			}
 
@@ -298,6 +320,7 @@ public class BufferController implements Runnable {
 							tokenBlocker = false;
 							cli.returnMove("New position--> x: " + me.getCoordinate().getX() + " and y: "
 									+ me.getCoordinate().getY());
+							cli.returnMove("Zone: " + me.getArea(mygame.getDimension()));
 							receivedToken();
 
 						} else {
@@ -313,29 +336,28 @@ public class BufferController implements Runnable {
 				System.out.println("###BUFFERController## RECEIVED A MOVE REQUEST FROM "
 						+ ((MoveCom) action).getPlayer().getId() + " #####");
 				if (((MoveCom) action).getCoordinate().equal(me.getCoordinate())) {
+
 					ResponseMove response = new ResponseMove();
 					response.setPlayer(me);
+					response.setNext(next);
+					response.setPrev(prev);
+					System.out.println("###BUFFERController## My next: "+next + " my prev: "+prev+" #####");
 					response.setResponse(ResponseMove.Response.KILLED_ME);
+
 					cli.returnMove("Killed by" + ((MoveCom) action).getPlayer().getId());
+
 					try {
-						try {
-							((MoveCom) action).getClient().send(response);
-						} catch (JsonProcessingException e) {
-							e.printStackTrace();
-						}
-
-						DeleteMe deleteme = new DeleteMe();
-						deleteme.setPlayer(me);
-						deleteme.setNext(next);
-						deleteme.setPrev(prev);
-						deleteme.setSender(((MoveCom) action).getPlayer());
-						server.sendMessageToAll(deleteme);
-						com.deleteMe(me.getId(), mygame.getId());
-						end = true;
-
+						((MoveCom) action).getClient().send(response);
 					} catch (JsonProcessingException e) {
 						e.printStackTrace();
 					}
+
+					com.deleteMe(me.getId(), mygame.getId());
+					end = true;
+					for (Client client : clients) {
+						client.end = true;
+					}
+
 				} else {
 					ResponseMove response = new ResponseMove();
 					response.setPlayer(me);
@@ -354,10 +376,13 @@ public class BufferController implements Runnable {
 						+ ((ResponseMove) action).getPlayer().getId() + " #### ");
 				Boolean killed = false;
 				responseMoves.add(((ResponseMove) action));
+
 				if (responseMoves.size() == mygame.getPlayerList().size() - 1) {
 					for (ResponseMove responseMove : responseMoves) {
+						
 						if (responseMove.getResponse() == ResponseMove.Response.KILLED_ME) {
 							points++;
+							
 							cli.returnMove("Killed: " + responseMove.getPlayer().getId());
 							PlayerReceivedAPoint point = new PlayerReceivedAPoint();
 							point.setPlayer(me);
@@ -368,23 +393,61 @@ public class BufferController implements Runnable {
 							} catch (JsonProcessingException e) {
 								e.printStackTrace();
 							}
+							
+							checkIfImAWinner();
+							
 							killed = true;
 							tokenBlocker = true;
+
+							mygame.removePlayer(responseMove.getPlayer().getId());
+
+							if (mygame.getPlayerList().size() != 1) {
+								DeleteMe deleteme = new DeleteMe();
+								deleteme.setPlayer(responseMove.getPlayer());
+								deleteme.setNext(responseMove.getNext());
+								deleteme.setPrev(responseMove.getPrev());
+								deleteme.setSender(me);
+
+								if (responseMove.getNext().getId().equals(me.getId())) {
+									prev = responseMove.getPrev();
+									System.out.println("####BUFFERController## NEW PREV: "+prev.getId()+" ####");
+
+								}
+								if (responseMove.getPrev().getId().equals(me.getId())) {
+									next = responseMove.getNext();
+									System.out.println("####BUFFERController## NEW NEXT: "+next.getId()+" ####");
+
+								}
+
+								try {
+									server.sendMessageToAll(deleteme);
+								} catch (JsonProcessingException e) {
+									e.printStackTrace();
+								}
+							} else {
+								killed = false;
+								next = me;
+								prev = me;
+							}
+
 						}
 					}
 
-					if (!killed) {
-						tokenBlocker = false;
-						cli.returnMove("Move completed");
-					}
+					
 
 					cli.returnMove("New position: X: " + me.getCoordinate().getX() + "Y:" + me.getCoordinate().getY());
 					cli.returnMove("Now you have an amount of: " + points);
+					cli.returnMove("Zone: " + me.getArea(mygame.getDimension()));
 					responseMoves = new ArrayList<ResponseMove>();
 					synchronized (cli) {
 						cli.notify();
 					}
-					receivedToken();
+					if (!killed) {
+						tokenBlocker = false;
+						cli.returnMove("Move completed");
+						receivedToken();
+					}
+					
 				}
 
 			} else if (action instanceof PlayerReceivedAPoint) {
@@ -392,6 +455,86 @@ public class BufferController implements Runnable {
 						+ " has just gained a point, now he have " + ((PlayerReceivedAPoint) action).getPoints()
 						+ " points");
 				cli.returnMove("You have " + points + " points");
+
+				// ADD BOMB
+			} else if (action instanceof AdviceBomb) {
+				cli.returnBomb("In 5 second one bomb sent by " + ((AdviceBomb) action).player.getId()
+						+ " will explode in the " + ((AdviceBomb) action).area + " area.");
+				cli.returnBomb("You're currently in the " + me.getArea(mygame.getDimension()) + " area");
+
+			}
+
+			else if (action instanceof UpdateYourNextPrev) {
+				updateNextPrev((UpdateYourNextPrev) action);
+
+			}
+			else if (action instanceof AckAfterBomb) {
+				System.out.println("####BUFFERController## RECEIVED AckAfterBomb ####");
+
+				ack.add((AckAfterBomb)action);
+				if(ack.size()==mygame.getPlayerList().size()-1){
+					System.out.println("####BUFFERController## INside update ####");
+					updateNextPrev(update);
+					ack=new ArrayList<AckAfterBomb>();
+				}
+				
+			}
+			// AFTER BOMBM CHECK
+			else if (action instanceof AfterBombCheck) {
+				
+				System.out.println("####BUFFERController## Token Blocker"+tokenBlocker+" ####");
+				
+				System.out.println("####BUFFERController## Inside AfterBombCheck ####");
+				AfterBombCheck afc = (AfterBombCheck) action;
+				System.out.println("####BUFFERController## After casting: AfterBombCheck ####");
+
+				if (tokenBlocker) {
+					ArrayList<Player> alive = new ArrayList<Player>();
+					for (Player player : afc.getList()) {
+
+						alive.add(player);
+
+					}
+					System.out.println("####BUFFERController## Update your nextprev: AfterBombCheck ####");
+
+					UpdateYourNextPrev update = new UpdateYourNextPrev();
+					update.setPlayer(afc.getPlayer());
+					update.alive = alive.toArray(new Player[alive.size()]);
+					update.setToken(me);
+					try {
+						server.sendMessageToAll(update);
+					} catch (JsonProcessingException e) {
+						e.printStackTrace();
+					}
+					this.update = update;
+					//updateNextPrev(update);
+
+				} else {
+					System.out.println("####BUFFERController## I'm just passing the data: AfterBombCheck ####");
+
+					AfterBombCheck afterbombcheck = new AfterBombCheck();
+					afterbombcheck.setArea(((AfterBombCheck) action).getArea());
+					afterbombcheck.setPlayer(((AfterBombCheck) action).getPlayer());
+					afterbombcheck.setList(((AfterBombCheck) action).getList());
+
+					System.out.println("####BUFFERController## Getting informations ####");
+
+					if (((AfterBombCheck) action).getArea() == me.getArea(mygame.getDimension())) {
+						cli.returnBomb("Bomb killed you.");
+						com.deleteMe(me.getId(), mygame.getId());
+					} else {
+						afterbombcheck.add(me);
+						cli.returnBomb("Bomb didn't kill you.");
+					}
+
+					try {
+						server.sendMessageToPlayer(next, afterbombcheck);
+					} catch (JsonProcessingException e) {
+						e.printStackTrace();
+					}
+
+				}
+
 			}
 
 			// ###### ASKED DELETING ######
@@ -402,29 +545,25 @@ public class BufferController implements Runnable {
 			else if (action instanceof Deleted) {
 
 				int test = 0;
-				Boolean otherone = false;
 
 				deleted.add(((Deleted) action));
 
 				for (Deleted del : deleted) {
 					System.out.println("###BUFFERController## Delete action" + del.getPlayer().getId() + " other: "
 							+ ((Deleted) action).getPlayer().getId());
-					if (del.getPlayer().getId() == ((Deleted) action).getPlayer().getId()) {
+
+					if (del.getPlayer().getId().equals(((Deleted) action).getPlayer().getId())) {
 						test++;
-					} else {
-						otherone = true;
 					}
 				}
 
-				if (test == mygame.getPlayerList().size() - 1 && !otherone) {
+				if (test == mygame.getPlayerList().size() - 1) {
 					System.out.println("###BufferController### Deleted all");
 					deleted = new ArrayList<Deleted>();
 					block = false;
-
-					if (((Deleted) action).getSender().getId().equals(me.getId())) {
-						tokenBlocker = false;
-						cli.returnMove("Move completed");
-					}
+					tokenBlocker = false;
+					cli.returnMove("Move completed");
+					receivedToken();
 				}
 
 			} else {
@@ -437,6 +576,125 @@ public class BufferController implements Runnable {
 
 		}
 
+	}
+
+	private void checkIfImAWinner() {
+		if(points==winpoint){
+			Winner winner = new Winner();
+			winner.setPlayer(me);
+		try {
+				server.sendMessageToAll(winner);
+		} catch (JsonProcessingException e) {
+				e.printStackTrace();
+		}
+		}
+		com.deleteMe(me.getId(), mygame.getId());
+		for(Client client: clients){
+			client.end=true;
+		}
+		
+	}
+
+	private void updateNextPrev(UpdateYourNextPrev action) {
+		UpdateYourNextPrev afc = (UpdateYourNextPrev) action;
+		int i = 0;
+		ArrayList<Player> newPlayerList= new ArrayList<Player>();
+		System.out.println(afc.alive.length);
+		for (Player player : afc.alive) {
+			if (player != null) {
+				
+				if (player.getId().equals(me.getId())) {
+					if (afc.alive.length == 1) {
+						System.out.println("###Buffercontroller## I'm Alone after bomb!###");
+						next = me;
+						prev = me;
+					} else if (afc.alive.length == 2) {
+						System.out.println("###Buffercontroller## We're in two!###");
+						if (i == 0) {
+							next = afc.get(1);
+							prev = afc.get(1);
+							System.out.println("###Buffercontroller## Seeting the next to:"+afc.get(1).getId()+"###");
+
+						} else {
+							next = afc.get(0);
+							prev = afc.get(0);
+							System.out.println("###Buffercontroller## Seeting the next to:"+afc.get(0).getId()+"###");
+						}
+					} else {
+						System.out.println("###Buffercontroller## We're in more than two!###");
+						if (i == 0) {
+							next = afc.get(1);
+							prev = afc.get(afc.alive.length - 1);
+							System.out.println("###Buffercontroller## Seeting the next to:"+afc.get(1).getId()+"###");
+						} else if (i == afc.alive.length - 1) {
+							next = afc.get(0);
+							prev = afc.get(i - 1);
+							System.out.println("###Buffercontroller## Seeting the next to:"+afc.get(0).getId()+"###");
+						} else {
+							next = afc.get(i + 1);
+							prev = afc.get(i - 1);
+							System.out.println("###Buffercontroller## Seeting the next to:"+afc.get(i+1).getId()+"###");
+						}
+					}
+				}
+				newPlayerList.add(afc.get(i));
+			}
+			i++;
+			
+		}
+		
+		
+		mygame.setPlayerList(newPlayerList);
+		
+		if (afc.getPlayer().getId().equals(me.getId())) {
+			cli.returnBomb("You have gained " + (mygame.getPlayerList().size() - afc.alive.length) + " points");
+			points += mygame.getPlayerList().size() - afc.alive.length;
+			synchronized(cli){
+				cli.notify();
+			}
+			checkIfImAWinner();
+		}
+		
+		if(!tokenBlocker){                                                                          
+			try {
+				server.sendMessageToPlayer(afc.getToken(), new AckAfterBomb());
+			} catch (JsonProcessingException e) {
+				e.printStackTrace();
+			}
+		}
+
+		if (tokenBlocker) {
+			Boolean imAlive = false;
+			for (Player player : afc.alive) {
+				if (player != null) {
+					if (player.getId().equals(me.getId())) {
+						imAlive = true;
+					}
+				}
+			}
+			if (imAlive) {
+				System.out.println("###Buffercontroller## I'm the token man and i'm alive!###");
+				tokenBlocker = false;
+				synchronized(cli){
+				cli.notify();
+				}
+				receivedToken();
+				
+			} else {
+				System.out.println("###Buffercontroller## I'm the token man and i'm dead!###");
+				if (afc.alive.length > 0) {
+					try {
+						System.out.println("###Buffercontroller## Sending the token to: "+afc.alive[0].getId()+"###");
+						PassToken passtoken = new PassToken();
+						passtoken.i=1;
+						server.sendMessageToPlayer(afc.alive[0],passtoken);
+					} catch (JsonProcessingException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+
+		}
 	}
 
 	private void checKAll() {
@@ -485,6 +743,7 @@ public class BufferController implements Runnable {
 				try {
 					Ack ack = new Ack();
 					ack.setPlayer(((WelcomeNewPlayer) action).getNewPlayer());
+					ack.setSender(me);
 					server.sendMessageToPlayer(((WelcomeNewPlayer) action).getNewPlayer(), ack);
 				} catch (JsonProcessingException e) {
 					e.printStackTrace();
@@ -631,7 +890,6 @@ public class BufferController implements Runnable {
 				prev = player;
 
 			} catch (JsonProcessingException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -639,27 +897,27 @@ public class BufferController implements Runnable {
 	}
 
 	private void receivedNewDeleteContact(DeleteMe deletePlayer) {
-		block = true;
-		mygame.removePlayer(deletePlayer.getPlayer().getId());
 
-		if (mygame.getPlayerList().size() != 1) {
-			if (deletePlayer.getNext().getId().equals(me.getId())) {
-				prev = deletePlayer.getPrev();
-			}
-			if (deletePlayer.getPrev().getId().equals(me.getId())) {
-				next = deletePlayer.getNext();
-			}
-			try {
-				Deleted del = new Deleted();
-				del.setPlayer(deletePlayer.getPlayer());
-				del.setSender(deletePlayer.getSender());
-				server.sendMessageToAll(del);
-				System.out.println("##BUFFERcontroller### SENT message to all #####");
-			} catch (JsonProcessingException e) {
-				e.printStackTrace();
-			}
-		} else {
-			tokenBlocker = false;
+		mygame.removePlayer(deletePlayer.getPlayer().getId());
+		if (deletePlayer.getNext().getId().equals(me.getId())) {
+			prev = deletePlayer.getPrev();
+			System.out.println("##BUFFERcontroller### New prev "+prev.getId()+" #####");
+
+		}
+		if (deletePlayer.getPrev().getId().equals(me.getId())) {
+			next = deletePlayer.getNext();
+			System.out.println("##BUFFERcontroller### New next "+next.getId()+" #####");
+
+		}
+		test_something_changed = true;
+		try {
+			Deleted del = new Deleted();
+			del.setPlayer(deletePlayer.getPlayer());
+			del.setSender(deletePlayer.getSender());
+			server.sendMessageToPlayer(deletePlayer.getSender(), del);
+			System.out.println("##BUFFERcontroller### SENT Deleted to " + deletePlayer.getSender().getId() + " #####");
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -671,20 +929,21 @@ public class BufferController implements Runnable {
 			first = false;
 			ArrayList<Action> temp;
 			if (!block) {
-				synchronized (buffer) {
 
-					temp = buffer.getAllActionsThatNeedsAToken();
-					for (Action action : temp) {
-						listactions.add(action);
-					}
+				temp = Buffer.getAllActionsThatNeedsAToken();
+				for (Action action : temp) {
+					listactions.add(action);
 				}
+
 				temp = null;
 
 				if (listactions.size() > 0) {
-					System.out.println("##BUFFERcontroller### ACTIONS: #####");
+					
 
 					for (Action actioninside : listactions) {
+						if(!(actioninside instanceof AddBomb)){
 						System.out.println("##BUFFERcontroller### " + actioninside.getClass() + "#####");
+						}
 					}
 				}
 
@@ -699,7 +958,8 @@ public class BufferController implements Runnable {
 
 						addingAPlayer = true;
 						receivedNewPlayerContact((NewPlayer) actioninside);
-						test_something_changed=true;
+						test_something_changed = true;
+						break;
 
 					} else if (actioninside instanceof NewPlayerResponse) {
 						System.out.println("##BUFFERcontroller### taking new player response #####");
@@ -711,7 +971,39 @@ public class BufferController implements Runnable {
 
 						newPLyaerConfirmedToHaveMyClientHandler((NewPlayerResponse) actioninside);
 						addingAPlayer = false;
-						test_something_changed=true;
+						test_something_changed = true;
+						return;
+
+					} else if (actioninside instanceof ExplodingBomb) {
+						System.out.println("##BUFFERcontroller### Exploding Bomb  #####");
+
+						tokenBlocker = true;
+						AfterBombCheck afterbombcheck = new AfterBombCheck();
+						afterbombcheck.setArea(((ExplodingBomb) actioninside).area);
+						afterbombcheck.setPlayer(((ExplodingBomb) actioninside).player);
+						afterbombcheck.setToken(me);
+						if (((ExplodingBomb) actioninside).area == me.getArea(mygame.getDimension())) {
+
+							cli.returnBomb("Bomb killed you.");
+							com.deleteMe(me.getId(), mygame.getId());
+						} else {
+							afterbombcheck.add(me);
+							cli.returnBomb("Bomb didn't kill you.");
+						}
+						System.out.println("##BUFFERcontroller### ADDING TO LIST  #####");
+
+						try {
+							System.out.println("##BUFFERcontroller### Sending to NEXT  #####");
+
+							server.sendMessageToPlayer(next, afterbombcheck);
+							System.out.println("##BUFFERcontroller### Sent to NEXT  #####");
+						} catch (JsonProcessingException e) {
+							e.printStackTrace();
+						}
+
+						synchronized (buffer) {
+							Buffer.deleteAction(actioninside);
+						}
 
 						return;
 					}
@@ -727,7 +1019,7 @@ public class BufferController implements Runnable {
 					// ###### MOVE #####
 					if (action instanceof MoveCLI) {
 						System.out.println("##BUFFERcontroller### MOVE ACTION #####");
-						test_something_changed=true;
+						test_something_changed = true;
 						Boolean done = false;
 
 						// ###### UP #####
@@ -806,22 +1098,51 @@ public class BufferController implements Runnable {
 							} else {
 								cli.returnMove("New position--> x: " + me.getCoordinate().getX() + " and y: "
 										+ me.getCoordinate().getY());
+								cli.returnMove("Zone: " + me.getArea(mygame.getDimension()));
 								synchronized (cli) {
 									cli.notify();
 								}
 
 							}
 						}
-						// ###### BOMB #####
-					} else if (action instanceof Bomb) {
 
+					} else if (action instanceof AddBomb) {
+						if (me.area == null) {
+							me.area = ((AddBomb) action).area;
+							cli.returnBomb("Thanks to your accelerometer you have acquired a new bomb for the "
+									+ me.area + " sector!");
+
+						}
+						// ADVICE BOMB
+					}
+					// BOMB
+					else if (action instanceof Bomb) {
+						// Don't have a bomb
+						if (me.area == null) {
+							cli.returnBomb("You don't have a bomb");
+							synchronized (cli) {
+								cli.notify();
+							}
+						} // Have a bomb
+						else {
+							
+							
+							BombManager bomb = new BombManager(server, me, me.area);
+							cli.returnBomb("You have launched a bomb in the " + me.area
+									+ " sector! You'll now have 5 second to escape from that area.");
+							bomb.start();
+							me.area = null;
+
+						}
 					}
 				} else {
 					try {
 
 						if (mygame.getPlayerList().size() != 1) {
 							if (!addingAPlayer) {
-								test_something_changed=true;
+								System.out.println("##BUFFERcontroller### ASKING OTHER POSITIONS #####");
+
+								test_something_changed = true;
 								server.sendMessageToAll(new AskPosition());
 								tokenBlocker = true;
 							}
@@ -847,10 +1168,10 @@ public class BufferController implements Runnable {
 					if (mygame.getPlayerList().size() != 1) {
 
 						try {
-							if(test_something_changed){
-								System.out.println("##BUFFERcontroller### PASSING THE TOKEN TO SOMEONE ELSE #####");
+							if (test_something_changed) {
+								System.out.println("##BUFFERcontroller### PASSING THE TOKEN to "+next.getId()+" After something changed #####");
 
-								test_something_changed=false;
+								test_something_changed = false;
 							}
 							server.sendMessageToPlayer(next, new PassToken());
 						} catch (JsonProcessingException e) {

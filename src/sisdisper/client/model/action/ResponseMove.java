@@ -16,6 +16,26 @@ public class ResponseMove extends Action{
 	}
 	
 	private Player player; 
+	private Player next;
+	private Player prev;
+	
+	
+	public Player getNext() {
+		return next;
+	}
+
+	public void setNext(Player next) {
+		this.next = next;
+	}
+
+	public Player getPrev() {
+		return prev;
+	}
+
+	public void setPrev(Player prev) {
+		this.prev = prev;
+	}
+
 	private Response response;
 
 	public Response getResponse() {

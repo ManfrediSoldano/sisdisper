@@ -7,14 +7,19 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name="Player")
 public class Player implements Serializable{
 	
+	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
 	private String id;
 	private String ip;
 	private int port;
 	private int point;
+	//private Boolean alive;
+	public Area area=null;
+	
 	private Coordinate coordinate; 
 	public String getId() {
 		return id;
@@ -60,7 +65,27 @@ public class Player implements Serializable{
 		this.point = point;
 	}
 	
+	 public Area getArea(int dimension){
+		 if(coordinate!=null){
+			 int x = dimension/2;
+			 int y = dimension/2;
+			 int player_x = coordinate.getX();
+			 int player_y = coordinate.getY();
+			 if(player_x>=x && player_y>=y){
+				 return Area.RED;
+			 } else if(player_x<=x && player_y>=y){
+				 return Area.GREEN;
+			 } else if(player_x>=x && player_y<=y){
+				 return Area.YELLOW;
+			 } else if(player_x<=x && player_y<=y){
+				 return Area.BLUE;
+			 }
+			 
+		 }
+		 return null;
+	 }
+	 
 	
 	
-
+	
 }

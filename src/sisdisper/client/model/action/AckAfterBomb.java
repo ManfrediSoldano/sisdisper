@@ -1,10 +1,8 @@
 package sisdisper.client.model.action;
 
-import sisdisper.server.model.Area;
 import sisdisper.server.model.Player;
 
-public class Bomb  extends Action {
-
+public class AckAfterBomb extends Action {
 	/**
 	 * 
 	 */
@@ -12,20 +10,23 @@ public class Bomb  extends Action {
 	/**
 	 * 
 	 */
-	private Player sender;
-	private Area area;
-	
-	
+	Player player;
+	Player sender;
+
 	public Player getSender() {
 		return sender;
 	}
+
 	public void setSender(Player sender) {
 		this.sender = sender;
 	}
-	public Area getArea() {
-		return area;
+
+	public Player getPlayer() {
+		return player;
 	}
-	public void setArea(Area area) {
-		this.area = area;
+
+	public void setPlayer(Player player) {
+		this.player = player;
 	}
+	
 }

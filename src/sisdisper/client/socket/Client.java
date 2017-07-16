@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import sisdisper.client.model.Buffer;
 import sisdisper.client.model.action.Ack;
 import sisdisper.client.model.action.Action;
+import sisdisper.client.model.action.AfterBombCheck;
 import sisdisper.client.model.action.AskPosition;
 import sisdisper.client.model.action.NewPlayerResponse;
 import sisdisper.client.model.action.PassToken;
@@ -40,7 +41,7 @@ public class Client extends Thread {
 	private String received_text;
 	private Player player;
 	private Buffer buffer;
-
+	public Boolean end=false;
 	public void start() {
 		t = new Thread(this);
 		t.start();
@@ -93,7 +94,7 @@ public class Client extends Thread {
 
 	public void run() {
 		try {
-			while (true) {
+			while (!end) {
 
 				try {
 
@@ -129,8 +130,9 @@ public class Client extends Thread {
 
 	}
 
-	public void setReceived_text(String received_text) throws JsonParseException, JsonMappingException, IOException {
+	public void setReceived_text(String received_text) {
 		// System.out.println("@@@@CLIENT@@ RECEIVED NEW TEXT! @@@@@@@ ");
+		try {
 		ObjectMapper mapper = new ObjectMapper();
 		String saction = mapper.readValue(received_text, String.class);
 		Action deser = new Action();
@@ -143,9 +145,13 @@ public class Client extends Thread {
 		if (action instanceof AskPosition) {
 			System.out.println("@@@@CLIENT@@ RECEIVED ASK POSITION @@@@@@@ ");
 		}
+		if (action instanceof AfterBombCheck) {
+			System.out.println("@@@@CLIENT@@ RECEIVED AFTERBOMBCHECK @@@@@@@ ");
+		}
+		
 		
 
-		try {
+	
 			if (action instanceof NewPlayerResponse) {
 				System.out.println("@@@@CLIENT@@ NEW PLAYER RESPONSE @@@@@@@ ");
 			}
@@ -156,8 +162,10 @@ public class Client extends Thread {
 				System.out.println("@@@@CLIENT@@ AFTER ADDING A NEW PLAYER RESPONSE @@@@@@@ ");
 			}
 
-		} catch (JAXBException | InterruptedException e) {
+		} catch (JAXBException | InterruptedException | IOException  e) {
 			// TODO Auto-generated catch block
+			System.err.println(received_text);
+
 			e.printStackTrace();
 		}
 

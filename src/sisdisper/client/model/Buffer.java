@@ -9,9 +9,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import sisdisper.client.BufferController;
 
 import sisdisper.client.model.action.Action;
-
+import sisdisper.client.model.action.AddBomb;
+import sisdisper.client.model.action.AfterBombCheck;
 import sisdisper.client.model.action.AskPosition;
 import sisdisper.client.model.action.Bomb;
+import sisdisper.client.model.action.ExplodingBomb;
 import sisdisper.client.model.action.MoveCLI;
 import sisdisper.client.model.action.MoveCom;
 import sisdisper.client.model.action.NewPlayer;
@@ -36,22 +38,24 @@ public class Buffer {
 	private static ArrayList<Action> actionsThatNeedsAToken = new ArrayList<Action>();
 
 	public static Boolean addAction(Action action) {
-		
-		if (!(action instanceof PassToken)) {
+
+		if (!(action instanceof MoveCLI) && !(action instanceof Bomb) && !(action instanceof NewPlayer) && !(action instanceof AddBomb)) {
 			System.out.println("##BUFFER### INSIDE ADDACTION (ONLY ACTION) FROM " + action.getClass() + "#####");
+			
+				while (!bufferController.imFree) {
+				}
+			
 
-		}
-
-		if (!(action instanceof MoveCLI) && !(action instanceof Bomb) && !(action instanceof NewPlayer)) {
-			while (!bufferController.imFree) {
-			}
+			System.out.println("##BUFFER### FREE " + action.getClass() + "#####");
 			synchronized (actions) {
 
 				actions.add(action);
 			}
+			System.out.println("##BUFFER### NOTIFY " + action.getClass() + "#####");
 			synchronized (bufferController) {
 				bufferController.notify();
 			}
+			System.out.println("##BUFFER### OUTSIDE ADDACTION (ONLY ACTION) FROM " + action.getClass() + "#####");
 
 			return true;
 		} else {
@@ -61,7 +65,15 @@ public class Buffer {
 					System.out.println("##BUFFER### ADDED ON BUFFER: " + action.getClass() + " #####");
 					actionsThatNeedsAToken.add(action);
 
-				} else {
+				}else if  ((action instanceof MoveCLI)) {
+
+					System.out.println("##BUFFER### ADDED ON BUFFER: " + action.getClass() + " #####");
+					actionsThatNeedsAToken.add(action);
+
+				} 
+				
+				
+				else {
 					actionsThatNeedsAToken.add(action);
 				}
 			}
@@ -79,7 +91,7 @@ public class Buffer {
 
 		}
 
-		if (!(action instanceof NewPlayerResponse) && !(action instanceof NewPlayer)) {
+		if (!(action instanceof NewPlayerResponse) && !(action instanceof NewPlayer) && !(action instanceof ExplodingBomb)) {
 			synchronized (actions) {
 
 				if (action instanceof WelcomeNewPlayer) {
@@ -104,6 +116,33 @@ public class Buffer {
 
 					}
 				}
+				
+				if (action instanceof AfterBombCheck) {
+
+					for (Action deleteAction : actionsThatNeedsAToken) {
+						if (deleteAction instanceof ExplodingBomb) {
+							if (((ExplodingBomb) deleteAction).player.getId()
+									.equals(((AfterBombCheck) action).getPlayer().getId())) {
+								synchronized (actionsThatNeedsAToken) {
+									Boolean removed = actionsThatNeedsAToken.remove(deleteAction);
+
+									System.out.println("##BUFFER### REMOVED Exploding Bomb: " + removed + "#####");
+								}
+								break;
+								/*
+								 * Ack ack = new Ack();
+								 * ack.setPlayer(((WelcomeNewPlayer)
+								 * action).getNewPlayer()); client.send(ack);
+								 */
+							}
+						}
+
+					}
+				}
+				
+				
+				
+				
 			}
 			if (action instanceof AskPosition) {
 				((AskPosition) action).setClient(client);
@@ -144,6 +183,8 @@ public class Buffer {
 		}
 
 		else {
+			
+			
 			synchronized (actionsThatNeedsAToken) {
 
 				System.out.println("##BUFFER### ADDED ON BUFFER: " + action.getClass() + " #####");
@@ -186,18 +227,15 @@ public class Buffer {
 		return null;
 	}
 
-	public synchronized ArrayList<Action> getAllActions() {
-
-		return actions;
+	public static ArrayList<Action> getAllActions() {
+		synchronized (actions) {
+			return actions;
+		}
 	}
 
-	public synchronized ArrayList<Action> getAllActionsThatNeedsAToken() {
+	public static ArrayList<Action> getAllActionsThatNeedsAToken() {
 		synchronized (actionsThatNeedsAToken) {
-			if (actionsThatNeedsAToken.size() > 0) {
-				// System.out.println("##BUFFER### getAllActionsThatNeedsAToken:
-				// SIZE LARGER THAN zero#####");
-
-			}
+			
 			return actionsThatNeedsAToken;
 		}
 	}

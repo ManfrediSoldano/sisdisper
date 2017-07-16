@@ -7,10 +7,11 @@ public class startClient {
 	
 	public static void main(String[] args) {
 		BufferController buffercontroller = new BufferController();
-		Buffer buffer = new Buffer();
-		
 		buffercontroller.start();
-		
+		Buffer buffer = new Buffer();
+		AccelerometerManager acc = new AccelerometerManager();
+		acc.start();
+		buffercontroller.start();
 		
 	}
 

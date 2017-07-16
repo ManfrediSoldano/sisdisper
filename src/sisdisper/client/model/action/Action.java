@@ -13,6 +13,10 @@ public class Action implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * 
+	 */
+
 	public String serialize(){
 		 try {	     
 		     ByteArrayOutputStream bo = new ByteArrayOutputStream();
@@ -36,7 +40,8 @@ public class Action implements Serializable {
 		      return obj;
 		     } catch (Exception e) {
 		    	 
-		     System.err.println(e);	    
+			     System.err.println(e + scommand);	    
+	    
 		     return null;
 		 }
 	}
