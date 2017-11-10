@@ -69,6 +69,8 @@ public class BufferController implements Runnable {
 	private Boolean test_something_changed = false;
 	private ArrayList<AckAfterBomb> ack = new ArrayList<AckAfterBomb>();
 	private UpdateYourNextPrev update = new UpdateYourNextPrev();
+	public String test = "";
+	private int test_count =0;
 	CLI cli;
 
 	private int winpoint = 3;
@@ -934,7 +936,11 @@ public class BufferController implements Runnable {
 
 	public void receivedToken() {
 		Boolean first = true;
-		
+		//testing
+		//test= test+"\r\n Count: " + test_count;
+		//test_count++;
+		//if(test_count>=2000){test_count=0;}
+		///
 		while (mygame.getPlayerList().size() == 1 || first || addingAPlayer) {
 			ArrayList<Action> listactions = new ArrayList<Action>();
 			first = false;

@@ -16,6 +16,10 @@ public class Action implements Serializable {
 	/**
 	 * 
 	 */
+	
+	public Boolean execute(){
+		return true;
+	}
 
 	public String serialize(){
 		 try {	     

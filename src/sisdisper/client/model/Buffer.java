@@ -44,13 +44,7 @@ public class Buffer {
 			System.out.println("##BUFFER### INSIDE ADDACTION (ONLY ACTION) FROM " + action.getClass() + "#####");
 
 			while (!bufferController.imFree) {
-				synchronized (this) {
-					try {
-						wait();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
+				
 			}
 
 			System.out.println("##BUFFER### FREE " + action.getClass() + "#####");
@@ -172,24 +166,24 @@ public class Buffer {
 			}
 
 			while (!bufferController.imFree) {
-				synchronized (this) {
-					wait();
-				}
+				
 			}
 
 			if (!(action instanceof PassToken)) {
 				System.out.println("##BUFFER### buffercontroller is free ");
 			}
 
-			synchronized (bufferController) {
-				synchronized (actions) {
+			
+			
 					if (action instanceof PassToken) {
 						
 						bufferController.receivedToken();
 						return true;
 
 					}
-
+					
+					synchronized (bufferController) {
+					synchronized (actions) {
 					actions.add(action);
 					System.out.println("##BUFFER### ADDED ACTION IN ACTIONS " + action.getClass()
 							+ " TITAL NUMBER IN ACTIONS: " + actions.size() + "#####");
