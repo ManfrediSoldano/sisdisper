@@ -1,4 +1,4 @@
-package sisdisper.client;
+package sisdisper.client.view;
 
 import java.util.Observable;
 

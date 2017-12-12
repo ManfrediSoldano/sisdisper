@@ -36,6 +36,8 @@ import sisdisper.client.model.action.WelcomeNewPlayer;
 import sisdisper.client.model.action.Winner;
 import sisdisper.client.socket.Client;
 import sisdisper.client.socket.Server;
+import sisdisper.client.view.CLI;
+import sisdisper.client.view.UserObservable;
 import sisdisper.server.model.Coordinate;
 import sisdisper.server.model.Game;
 import sisdisper.server.model.Player;
@@ -133,7 +135,7 @@ public class BufferController implements Runnable {
 
 						if (type == ResponseAddToGame.Type.ACK) {
 							mygame = ((ResponseAddToGame) response).getGame();
-							cli.returnAdded(type);
+							cli.returnAdded((ResponseAddToGame) response);
 							synchronized (cli) {
 								cli.notify();
 							}
@@ -144,7 +146,7 @@ public class BufferController implements Runnable {
 							insideAGame = true;
 						}
 						if (type != ResponseAddToGame.Type.ACK) {
-							cli.returnAdded(type);
+							cli.returnAdded((ResponseAddToGame) response);
 							synchronized (cli) {
 								cli.notify();
 							}
@@ -153,7 +155,9 @@ public class BufferController implements Runnable {
 						//// AGGIUNGERE RITORNO ERRORE////
 					}
 				} else {
-					cli.returnAdded(Type.AREADY_EXIST);
+					ResponseAddToGame respone = new ResponseAddToGame();
+					respone.setType(ResponseAddToGame.Type.AREADY_EXIST);
+					cli.returnAdded(respone);
 					synchronized (cli) {
 						cli.notifyAll();
 					}

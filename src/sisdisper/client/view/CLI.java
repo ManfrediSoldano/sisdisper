@@ -1,4 +1,4 @@
-package sisdisper.client;
+package sisdisper.client.view;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,7 +26,7 @@ public class CLI implements Runnable {
 	private BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 	public static final String ANSI_RED = "\u001B[31m";
 	UserObservable observable =null;
-	
+	GUI gui=null;
 	
 	public UserObservable getObservable() {
 		return observable;
@@ -103,7 +103,7 @@ public class CLI implements Runnable {
 			System.err.println( "3 CreateANewGame //Create a new game");
 			System.err.println( "Help //Create a new game");
 			System.err.println( "All required inforamtion will be later asked");
-
+			gui = new GUI();
 			while (notInsideAGame) {
 				try {
 
@@ -167,7 +167,16 @@ public class CLI implements Runnable {
 					e.printStackTrace();
 				}
 			}
-
+			
+			
+			//GUI STARTING POINT
+			
+			UserObservable uo=new UserObservable();
+			gui.setObservable(uo);
+			uo.addObserver(buffer);
+			gui.startGUI();
+			
+			
 			System.err.println();
 			System.err.println();
 			System.err.println( "Possible Actions inside the game:");
@@ -261,27 +270,30 @@ public class CLI implements Runnable {
 
 	}
 
-	public void returnAdded(Type type) {
-		if (type == ResponseAddToGame.Type.ACK) {
+	public void returnAdded(ResponseAddToGame response) {
+		if (response.getType() == ResponseAddToGame.Type.ACK) {
 			System.err.println("Correcly added to the game.");
+			gui.setDim(response.getGame().getDimension());
 			notInsideAGame = false;
 		} else {
-			System.err.println("Unfortunately we wasn't able to add you to the game : " + type.toString());
+			System.err.println("Unfortunately we wasn't able to add you to the game : " + response.toString());
 		}
 	}
 
 	public void returnCreated(String string, Boolean inside) {
-
+		
 		System.err.println(string);
 		notInsideAGame = inside;
 	}
 
 	public void returnMove(String string) {
 		System.err.println(string);
+		gui.addText(string);
 	}
 
 	public void returnBomb(String string) {
 		System.err.println(string);
+		gui.addText(string);
 
 	}
 

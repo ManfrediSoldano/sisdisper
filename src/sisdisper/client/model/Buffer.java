@@ -4,26 +4,17 @@ import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
 
-import javax.xml.bind.JAXBException;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 import sisdisper.client.BufferController;
 import sisdisper.client.model.CountingSemaphore;
 import sisdisper.client.model.action.Action;
 import sisdisper.client.model.action.AddBomb;
-import sisdisper.client.model.action.AfterBombCheck;
-import sisdisper.client.model.action.AskPosition;
 import sisdisper.client.model.action.Bomb;
-import sisdisper.client.model.action.ExplodingBomb;
 import sisdisper.client.model.action.MoveCLI;
-import sisdisper.client.model.action.MoveCom;
 import sisdisper.client.model.action.NewPlayer;
 import sisdisper.client.model.action.NewPlayerResponse;
-import sisdisper.client.model.action.PassToken;
-import sisdisper.client.model.action.ResponseMove;
-import sisdisper.client.model.action.WelcomeNewPlayer;
-import sisdisper.client.socket.Client;
+
 
 public class Buffer implements Observer{
 	private static BufferController bufferController;
@@ -116,6 +107,8 @@ public class Buffer implements Observer{
 
 		}
 	}
+	
+	
 
 
 
