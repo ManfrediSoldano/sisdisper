@@ -4,6 +4,7 @@ package sisdisper.client.socket;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 
+import sisdisper.client.model.Buffer;
 import sisdisper.client.model.action.Ack;
 import sisdisper.client.model.action.Action;
 import sisdisper.server.model.Player;
@@ -26,6 +27,7 @@ public class Server implements Runnable {
 	private Thread t;
 	Player me = new Player();
 	private static ArrayList<ServerClientsHandler> clients = new ArrayList<ServerClientsHandler>();
+	Buffer buffer = new Buffer();
 	/**
 	 * Application method to run the server runs in an infinite loop listening
 	 * on port 9898. When a connection is requested, it spawns a new thread to
@@ -33,10 +35,11 @@ public class Server implements Runnable {
 	 * unique client number for each client that connects just to show
 	 * interesting logging messages. It is certainly not necessary to do this.
 	 */
+	@SuppressWarnings("static-access")
 	public void run() {
 		try {
 			System.out.println("The  server is running.");
-			
+			buffer.getIstance();
 			ServerSocket listener = new ServerSocket(me.getPort());
 			try {
 				while (true) {
@@ -45,6 +48,9 @@ public class Server implements Runnable {
 					synchronized(clients){
 					clients.add(client);
 					}
+					ClientObservable observable = new ClientObservable ();
+					client.setObservable(observable);
+					observable.addObserver(buffer);
 					client.start();
 				}
 			} finally {

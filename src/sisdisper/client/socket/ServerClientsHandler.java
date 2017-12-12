@@ -27,6 +27,14 @@ public class ServerClientsHandler extends Thread {
 	Buffer buffer;
 	private Thread t;
 	String player_id = "";
+	private ClientObservable observable = null;
+	public ClientObservable getObservable() {
+		return observable;
+	}
+
+	public void setObservable(ClientObservable observable) {
+		this.observable = observable;
+	}
 
 	public String getPlayer_id() {
 		return player_id;
@@ -136,7 +144,7 @@ public class ServerClientsHandler extends Thread {
 			}
 
 			if (!(action instanceof AddMeToYourClients_NotPassToBuffer)) {
-				buffer.addAction(action);
+				observable.setActionChanged(action);
 
 			}
 

@@ -6,6 +6,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
+import sisdisper.server.model.Game;
+
 public class Action implements Serializable {
 	
 	/**
@@ -17,7 +19,7 @@ public class Action implements Serializable {
 	 * 
 	 */
 	
-	public Boolean execute(){
+	public Boolean execute(Game game){
 		return true;
 	}
 

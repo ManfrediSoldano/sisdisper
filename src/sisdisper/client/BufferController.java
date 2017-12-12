@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import sisdisper.client.model.Buffer;
+import sisdisper.client.model.CountingSemaphore;
 import sisdisper.client.model.action.Ack;
 import sisdisper.client.model.action.AckAfterBomb;
 import sisdisper.client.model.action.Action;
@@ -46,13 +47,18 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class BufferController implements Runnable {
 	private ClientToServerCommunication com = new ClientToServerCommunication();
+	
 	private Player me = new Player();
 	private Game mygame;
+	
 	private Boolean insideAGame = false;
 	private Player next = new Player();
 	private Player prev = new Player();
 	private ArrayList<Client> clients = new ArrayList<Client>();
-
+	
+	//Semaphore
+	private CountingSemaphore semaphore = CountingSemaphore.getInstance();
+	
 	private Server server = new Server();
 	private Thread t;
 	private Buffer buffer;
@@ -84,6 +90,9 @@ public class BufferController implements Runnable {
 
 		cli = new CLI();
 		cli.setBuffer(buffer);
+		UserObservable observable = new UserObservable();
+		cli.setObservable(observable);
+		observable.addObserver(buffer);
 		cli.start();
 
 	}
@@ -94,45 +103,24 @@ public class BufferController implements Runnable {
 
 	@Override
 	public void run() {
-		ArrayList<Action> actions;
-		Action action;
+		
+		Action action = new Action();
 		// Add me on a game
 
 		while (!end) {
 
-			if (!end) {
-
-				try {
-
-					actions = Buffer.getAllActions();
-
-					if (actions.size() == 0) {
-						
-						
-						synchronized (this) {
-							imFree = true;
-							System.out.println("###BUFFERController## GOING IN WAIT #####");
-							synchronized(buffer){
-							buffer.notify();
-							}
-							wait();
-							
-							imFree = false;
-
-							System.out.println("###BUFFERController## WAKE UP #####");
-						}
-					}
-				} catch (InterruptedException e) {
-
-					e.printStackTrace();
-				}
-			}
-
+			
+			try{
 			System.out.println("###BUFFERController## GETTING FIRST ACTION #####");
-
+			semaphore.release();
 			action = Buffer.getFirstAction();
 			System.out.println("###BUFFERController## AFTER FIRST ACTION #####");
-
+			
+			}catch(Exception e){
+				
+			}
+			//action.execute(mygame);
+			
 			// ###### AGGIUNTA AD UN GIOCO ######
 			if (action instanceof AddMeToGame) {
 				if (!insideAGame) {
@@ -1142,8 +1130,9 @@ public class BufferController implements Runnable {
 							}
 						} // Have a bomb
 						else {
-
-							BombManager bomb = new BombManager(server, me, me.area);
+							BombObservable bombobservable = new BombObservable();
+							bombobservable.addObserver(buffer);
+							BombManager bomb = new BombManager(server, me, me.area, bombobservable);
 							cli.returnBomb("You have launched a bomb in the " + me.area
 									+ " sector! You'll now have 5 second to escape from that area.");
 							bomb.start();

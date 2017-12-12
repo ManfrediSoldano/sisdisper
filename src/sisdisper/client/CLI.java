@@ -25,6 +25,17 @@ public class CLI implements Runnable {
 	Boolean lock = true;
 	private BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 	public static final String ANSI_RED = "\u001B[31m";
+	UserObservable observable =null;
+	
+	
+	public UserObservable getObservable() {
+		return observable;
+	}
+
+	public void setObservable(UserObservable observable) {
+		this.observable = observable;
+	}
+
 	public Thread getT() {
 		return t;
 	}
@@ -80,7 +91,8 @@ public class CLI implements Runnable {
 			CLINewPlayer newplayer = new CLINewPlayer();
 			newplayer.setPlayer(player);
 			synchronized (buffer) {
-			buffer.addAction(newplayer);
+			observable.setActionChanged(newplayer);
+			
 			}
 			/// Chiedo cosa vuole fare dopo
 			System.err.println( "Thanks for set your username, " + player.getId());
@@ -97,8 +109,8 @@ public class CLI implements Runnable {
 
 					String action = br.readLine();
 					if (action.equals("GetGames") || action.equals("1")) {
-						
-							buffer.addAction(new GetGamesFromServer());
+						observable.setActionChanged(new GetGamesFromServer());
+
 						
 
 						synchronized (this) {
@@ -113,8 +125,8 @@ public class CLI implements Runnable {
 
 						AddMeToGame add = new AddMeToGame();
 						add.setGame(gametobeadded);
+						observable.setActionChanged(add);
 						
-							buffer.addAction(add);
 						
 
 						synchronized (this) {
@@ -133,8 +145,8 @@ public class CLI implements Runnable {
 						// Action object
 						CreateGame create = new CreateGame();
 						create.setGame(gameToBeCreated);
+						observable.setActionChanged(create);
 						
-							buffer.addAction(create);
 						
 						synchronized (this) {
 							wait();
@@ -170,36 +182,39 @@ public class CLI implements Runnable {
 
 				if (receivedCommand.equals("Bomb") || receivedCommand.equals("5")) {
 					Bomb bomb = new Bomb();
-						buffer.addAction(bomb);
+					observable.setActionChanged(bomb);
+
+			
 					
 					
 
 				} else if (receivedCommand.equals("Move up") || receivedCommand.equals("1")) {
 					MoveCLI movecli = new MoveCLI();
 					movecli.setWhere(MoveCLI.Where.UP);
-						buffer.addAction(movecli);
+					observable.setActionChanged(movecli);
+
 					
 					
 				} else if (receivedCommand.equals("Move down") || receivedCommand.equals("2")) {
 					MoveCLI movecli = new MoveCLI();
 					movecli.setWhere(MoveCLI.Where.DOWN);
-					
-						buffer.addAction(movecli);
+					observable.setActionChanged(movecli);
+
 					
 					
 				} else if (receivedCommand.equals("Move left") || receivedCommand.equals("3")) {
 					MoveCLI movecli = new MoveCLI();
 					movecli.setWhere(MoveCLI.Where.LEFT);
-					
-						buffer.addAction(movecli);
+					observable.setActionChanged(movecli);
+
 					
 
 					
 				} else if (receivedCommand.equals("Move right") || receivedCommand.equals("4")) {
 					MoveCLI movecli = new MoveCLI();
 					movecli.setWhere(MoveCLI.Where.RIGHT);
-					
-						buffer.addAction(movecli);
+					observable.setActionChanged(movecli);
+
 					
 					
 				} else {

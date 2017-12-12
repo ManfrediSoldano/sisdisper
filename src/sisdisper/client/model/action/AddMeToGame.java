@@ -26,4 +26,8 @@ public class AddMeToGame  extends Action  {
 		this.player = player;
 	}
 	
+	public Boolean execute(Game game){
+		return true;
+	}
+	
 }

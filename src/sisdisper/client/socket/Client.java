@@ -2,31 +2,17 @@ package sisdisper.client.socket;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.StringReader;
-import java.io.StringWriter;
+
 import java.net.Socket;
 import java.util.Scanner;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import sisdisper.client.model.Buffer;
-import sisdisper.client.model.action.Ack;
 import sisdisper.client.model.action.Action;
-import sisdisper.client.model.action.AfterBombCheck;
-import sisdisper.client.model.action.AskPosition;
-import sisdisper.client.model.action.NewPlayerResponse;
-import sisdisper.client.model.action.PassToken;
-import sisdisper.client.model.action.WelcomeNewPlayer;
 import sisdisper.server.model.Player;
-
 /**
  * A simple Swing-based client for the capitalization server. It has a main
  * frame window with a text field for entering strings and a textarea to see the
@@ -34,7 +20,7 @@ import sisdisper.server.model.Player;
  */
 public class Client extends Thread {
 	private Thread t;
-	private Scanner in;
+	private Scanner in; 
 	private PrintWriter out;
 	private String ip;
 	private int port;
@@ -42,6 +28,16 @@ public class Client extends Thread {
 	private Player player;
 	private Buffer buffer;
 	public Boolean end=false;
+	public ClientObservable clientObserver= null;
+	
+	public ClientObservable getClientObserver() {
+		return clientObserver;
+	}
+
+	public void setClientObserver(ClientObservable clientObserver) {
+		this.clientObserver = clientObserver;
+	}
+
 	public void start() {
 		t = new Thread(this);
 		t.start();
@@ -124,45 +120,18 @@ public class Client extends Thread {
 
 	}
 
-	public String getReceived_text() {
-
-		return received_text;
-
-	}
-
+	
 	public void setReceived_text(String received_text) {
-		// System.out.println("@@@@CLIENT@@ RECEIVED NEW TEXT! @@@@@@@ ");
 		try {
 		ObjectMapper mapper = new ObjectMapper();
 		String saction = mapper.readValue(received_text, String.class);
 		Action deser = new Action();
 		Action action = deser.deserialize(saction);
 
-		
-		if (action instanceof Ack) {
-			System.out.println("@@@@CLIENT@@ RECEIVED ACK @@@@@@@ ");
-		}
-		if (action instanceof AskPosition) {
-			System.out.println("@@@@CLIENT@@ RECEIVED ASK POSITION @@@@@@@ ");
-		}
-		if (action instanceof AfterBombCheck) {
-			System.out.println("@@@@CLIENT@@ RECEIVED AFTERBOMBCHECK @@@@@@@ ");
-		}
-		
+		clientObserver.setActionChanged(action);
 		
 
-	
-			if (action instanceof NewPlayerResponse) {
-				System.out.println("@@@@CLIENT@@ NEW PLAYER RESPONSE @@@@@@@ ");
-			}
-			
-				buffer.addAction(action, this);
-			
-			if (action instanceof NewPlayerResponse) {
-				System.out.println("@@@@CLIENT@@ AFTER ADDING A NEW PLAYER RESPONSE @@@@@@@ ");
-			}
-
-		} catch (JAXBException | InterruptedException | IOException  e) {
+		} catch ( IOException  e) {
 			// TODO Auto-generated catch block
 			System.err.println(received_text);
 

@@ -18,7 +18,7 @@ public class AccelerometerManager implements Runnable {
 	private Simulator simulator;
 	private ArrayList<Measurement> measure = new ArrayList<Measurement>();
 	private Double emai = 60.0;
-
+	private BombObservable observable = null;
 	@SuppressWarnings("unchecked")
 	public void start() {
 		t = new Thread(this);
@@ -28,6 +28,14 @@ public class AccelerometerManager implements Runnable {
 		simulator = new AccelerometerSimulator(sensorbuffer);
 		simulator.run();
 
+	}
+
+	public BombObservable getObservable() {
+		return observable;
+	}
+
+	public void setObservable(BombObservable observable) {
+		this.observable = observable;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -80,7 +88,8 @@ public class AccelerometerManager implements Runnable {
 					}
 					
 					bomb.area = area;
-					buffer.addAction(bomb);
+					observable.setActionChanged(bomb);
+					
 				
 				}
 				emai = actualema;
