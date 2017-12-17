@@ -116,6 +116,7 @@ public class ServerClientsHandler extends Thread {
 			String saction = mapper.readValue(received_text, String.class);
 			Action deser = new Action();
 			Action action = deser.deserialize(saction);
+			
 			if (action instanceof NewPlayer) {
 				System.out.println("@@@SERVERClientHandler@@@ NewPlayer received from: "
 						+ ((NewPlayer) action).getPlayer().getId() + " @@@@@ ");

@@ -19,7 +19,7 @@ public class Action implements Serializable {
 	 * 
 	 */
 	
-	public Boolean execute(Game game){
+	public Boolean execute(){
 		return true;
 	}
 

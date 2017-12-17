@@ -1,17 +1,15 @@
 package sisdisper.client.model.action;
 
-import java.util.ArrayList;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
+import sisdisper.client.BufferController;
 import sisdisper.server.model.Player;
 
-public class AckAfterBomb extends Action {
+public class AckAllPlayerAddedTheNewOne extends Action {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	/**
-	 * 
-	 */
 	Player player;
 	Player sender;
 
@@ -33,16 +31,17 @@ public class AckAfterBomb extends Action {
 
 	public Boolean execute() {
 
-		System.out.println("####BUFFERController## RECEIVED AckAfterBomb ####");
+		System.out.println("##BUFFERcontroller### ACK: ALL CHECKED #####");
 
-		ack.add((AckAfterBomb) action);
+		BufferController.tokenBlocker = false;
+		try {
+			BufferController.server.sendMessageToAll(new Ack());
+		} catch (JsonProcessingException e) {
 
-		if (ack.size() == mygame.getPlayerList().size() - 1) {
-			System.out.println("####BUFFERController## INside update ####");
-			updateNextPrev(update);
-			ack = new ArrayList<AckAfterBomb>();
+			e.printStackTrace();
 		}
+		PassToken token = new PassToken();
+		token.execute();
 		return true;
-	}
-
+	} 
 }

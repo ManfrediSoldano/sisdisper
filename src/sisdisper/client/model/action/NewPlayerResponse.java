@@ -2,18 +2,20 @@ package sisdisper.client.model.action;
 
 import sisdisper.server.model.Player;
 
-public class NewPlayerResponse  extends Action  {
- /**
+public class NewPlayerResponse extends Action {
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-private Player player;
+	private Player player;
 
-public Player getPlayer() {
-	return player;
-}
+	public Player getPlayer() {
+		return player;
+	}
 
-public void setPlayer(Player player) {
-	this.player = player;
-}
+	public void setPlayer(Player player) {
+		this.player = player;
+	}
+
+	
 }

@@ -1,5 +1,8 @@
 package sisdisper.client.model.action;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
+import sisdisper.client.BufferController;
 import sisdisper.server.model.Player;
 
 public class AddMeToYourClients extends Action {
@@ -11,8 +14,8 @@ public class AddMeToYourClients extends Action {
 	 * 
 	 */
 
-	Player player=null;
-	Player player_do_not_reply=null;
+	Player player = null;
+	Player player_do_not_reply = null;
 
 	public Player getPlayer_do_not_reply() {
 		return player_do_not_reply;
@@ -29,7 +32,18 @@ public class AddMeToYourClients extends Action {
 	public void setPlayer(Player player) {
 		this.player = player;
 	}
-	
-	
+
+	public Boolean execute() {
+		System.out.println("###BUFFERController## RICEVUTA RICHIESTA CHE MI CONFERMA CHE IL TIPO CON IL TOKEN ORA E' INSERITO TRA I MIEI CLIENT #####");
+		NewPlayerResponse newp = new NewPlayerResponse();
+		newp.setPlayer(BufferController.me);
+		try {
+			BufferController.server.sendMessageToPlayer(player, newp);
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+		
+		return true;
+	}
 
 }

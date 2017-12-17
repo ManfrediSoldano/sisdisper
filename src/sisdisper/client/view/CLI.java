@@ -11,6 +11,7 @@ import sisdisper.client.model.action.CLINewPlayer;
 import sisdisper.client.model.action.CreateGame;
 import sisdisper.client.model.action.GetGamesFromServer;
 import sisdisper.client.model.action.MoveCLI;
+import sisdisper.client.model.action.PassToken;
 import sisdisper.server.model.Game;
 import sisdisper.server.model.Player;
 import sisdisper.server.model.comunication.GetGames;
@@ -280,10 +281,16 @@ public class CLI implements Runnable {
 		}
 	}
 
-	public void returnCreated(String string, Boolean inside) {
+	public void returnCreated(String string, Boolean inside, Boolean token) {
 		
 		System.err.println(string);
 		notInsideAGame = inside;
+		if(token)
+		{
+			PassToken actionToken = new PassToken();
+			observable.setActionChanged(actionToken);
+		}
+		
 	}
 
 	public void returnMove(String string) {
@@ -295,6 +302,11 @@ public class CLI implements Runnable {
 		System.err.println(string);
 		gui.addText(string);
 
+	}
+	
+	public void publishString(String string){
+		System.err.println(string);
+		gui.addText(string);
 	}
 
 }
