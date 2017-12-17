@@ -1,8 +1,12 @@
 package sisdisper.client.model.action;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
+import sisdisper.client.BufferController;
+import sisdisper.client.ClientToServerCommunication;
 import sisdisper.server.model.Player;
 
-public class DeleteMe  extends Action  {
+public class DeleteMe extends Action {
 
 	/**
 	 * 
@@ -44,7 +48,32 @@ public class DeleteMe  extends Action  {
 	public void setPlayer(Player player) {
 		this.player = player;
 	}
-	
-	
-	
+
+	public Boolean execute() {
+
+		ClientToServerCommunication com = new ClientToServerCommunication();
+		BufferController.mygame.removePlayer(player.getId());
+		
+		if (next.getId().equals(BufferController.me.getId())) {
+			BufferController.prev = getPrev();
+			System.out.println("##BUFFERcontroller### New prev " + BufferController.prev.getId() + " #####");
+
+		}
+		if (next.getId().equals(BufferController.me.getId())) {
+			BufferController.next = getNext();
+			System.out.println("##BUFFERcontroller### New next " + BufferController.next.getId() + " #####");
+
+		}
+		
+		try {
+			Deleted del = new Deleted();
+			del.setPlayer(getPlayer());
+			del.setSender(getSender());
+			BufferController.server.sendMessageToPlayer(getSender(), del);
+			System.out.println("##BUFFERcontroller### SENT Deleted to " + getSender().getId() + " #####");
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+		return true;
+	}
 }

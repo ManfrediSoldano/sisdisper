@@ -52,12 +52,10 @@ import java.util.concurrent.ThreadLocalRandom;
 public class BufferController implements Runnable {
 		
 	
-	private ArrayList<Deleted> deleted = new ArrayList<Deleted>();
-	private Boolean block = false;
+	
 	private Boolean addingAPlayer = false;
 	public Boolean imFree = true;
 	private Boolean test_something_changed = false;
-	private UpdateYourNextPrev update = new UpdateYourNextPrev();
 	public String test = "";
 	private int test_count =0;
 	
@@ -78,7 +76,10 @@ public class BufferController implements Runnable {
     public static int points = 0;
     public static int winpoint = 3;
 	public static ArrayList<AckAfterBomb> ack = new ArrayList<AckAfterBomb>();
-
+	public static UpdateYourNextPrev tokenUpdate = new UpdateYourNextPrev();
+	public static ArrayList<Deleted> deleted = new ArrayList<Deleted>();
+	//Da capire cosa faccia
+	public static Boolean block = false;
 	
 	//internals
 	//Semaphore
@@ -124,132 +125,6 @@ public class BufferController implements Runnable {
 				
 			}
 			
-			
-			//SERVER - CLIENT
-			
-			// ###### AGGIUNTA AD UN GIOCO ######
-			
-
-		
-			// ###### ELIMINAMI DAL GIOCO ######
-
-			
-			// ###### ELIMINAMI DAL GIOCO ######
-
-			// ###### RICEVUTO UN ACK ######
-
-			
-
-			
-			// ###### RICEVUTO UN TOKEN ######
-			else if (action instanceof PassToken) {
-				
-				receivedToken();
-			}
-
-			
-			// ###### RICEVUTA RICHIESTA DI POSIZIONE ######
-			
-
-
-			
-		 else if (action instanceof AckAfterBomb) {
-			
-
-			}
-			// AFTER BOMBM CHECK
-			else if (action instanceof AfterBombCheck) {
-
-				System.out.println("####BUFFERController## Token Blocker" + tokenBlocker + " ####");
-
-				AfterBombCheck afc = (AfterBombCheck) action;
-
-				if (tokenBlocker) {
-					ArrayList<Player> alive = new ArrayList<Player>();
-					for (Player player : afc.getList()) {
-
-						alive.add(player);
-
-					}
-					System.out.println("####BUFFERController## Update your nextprev: AfterBombCheck ####");
-
-					UpdateYourNextPrev update = new UpdateYourNextPrev();
-					update.setPlayer(afc.getPlayer());
-					update.alive = alive.toArray(new Player[alive.size()]);
-					update.setToken(me);
-					
-					try {
-						server.sendMessageToAll(update);
-					} catch (JsonProcessingException e) {
-						e.printStackTrace();
-					}
-					this.update = update;
-					// updateNextPrev(update);
-
-				} else {
-					System.out.println("####BUFFERController## I'm just passing the data: AfterBombCheck ####");
-
-					AfterBombCheck afterbombcheck = new AfterBombCheck();
-					afterbombcheck.setArea(((AfterBombCheck) action).getArea());
-					afterbombcheck.setPlayer(((AfterBombCheck) action).getPlayer());
-					afterbombcheck.setList(((AfterBombCheck) action).getList());
-
-					System.out.println("####BUFFERController## Getting informations ####");
-
-					if (((AfterBombCheck) action).getArea() == me.getArea(mygame.getDimension())) {
-						cli.returnBomb("Bomb killed you.");
-					
-					} else {
-						afterbombcheck.add(me);
-						cli.returnBomb("Bomb didn't kill you.");
-					}
-
-					try {
-						server.sendMessageToPlayer(next, afterbombcheck);
-					} catch (JsonProcessingException e) {
-						e.printStackTrace();
-					}
-
-				}
-
-			}
-
-			// ###### ASKED DELETING ######
-			else if (action instanceof DeleteMe) {
-				receivedNewDeleteContact((DeleteMe) action);
-			}
-			// ###### CHECK IF EVERYONE HAVE DELETE IT ######
-			else if (action instanceof Deleted) {
-
-				int test = 0;
-
-				deleted.add(((Deleted) action));
-
-				for (Deleted del : deleted) {
-					System.out.println("###BUFFERController## Delete action " + del.getPlayer().getId() + " other: "
-							+ ((Deleted) action).getSender());
-
-					if (del.getPlayer().getId().equals(((Deleted) action).getPlayer().getId())) {
-						test++;
-					}
-				}
-
-				if (test == mygame.getPlayerList().size() - 1) {
-					System.out.println("###BufferController### Deleted all");
-					deleted = new ArrayList<Deleted>();
-					block = false;
-					tokenBlocker = false;
-					cli.returnMove("Move completed");
-					receivedToken();
-				}
-
-			} else {
-				if (action != null) {
-					System.out.println(
-							"####BufferController### -------!!!!!!--------  Errore: non ho elaborato: -------!!!!!!-------- "
-									+ action.getClass());
-				}
-			}
 
 		}
 
@@ -395,30 +270,7 @@ public class BufferController implements Runnable {
 		}
 	}
 
-	private void receivedNewDeleteContact(DeleteMe deletePlayer) {
-
-		mygame.removePlayer(deletePlayer.getPlayer().getId());
-		if (deletePlayer.getNext().getId().equals(me.getId())) {
-			prev = deletePlayer.getPrev();
-			System.out.println("##BUFFERcontroller### New prev " + prev.getId() + " #####");
-
-		}
-		if (deletePlayer.getPrev().getId().equals(me.getId())) {
-			next = deletePlayer.getNext();
-			System.out.println("##BUFFERcontroller### New next " + next.getId() + " #####");
-
-		}
-		test_something_changed = true;
-		try {
-			Deleted del = new Deleted();
-			del.setPlayer(deletePlayer.getPlayer());
-			del.setSender(deletePlayer.getSender());
-			server.sendMessageToPlayer(deletePlayer.getSender(), del);
-			System.out.println("##BUFFERcontroller### SENT Deleted to " + deletePlayer.getSender().getId() + " #####");
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-		}
-	}
+	
 
 	public void receivedToken() {
 		Boolean first = true;
@@ -499,6 +351,7 @@ public class BufferController implements Runnable {
 						synchronized (buffer) {
 							Buffer.deleteAction(actioninside);
 						}
+						
 						try {
 							System.out.println("##BUFFERcontroller### Sending to NEXT  #####");
 

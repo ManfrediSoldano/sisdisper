@@ -1,8 +1,11 @@
 package sisdisper.client.model.action;
 
+import java.util.ArrayList;
+
+import sisdisper.client.BufferController;
 import sisdisper.server.model.Player;
 
-public class Deleted extends Action  {
+public class Deleted extends Action {
 
 	/**
 	 * 
@@ -47,7 +50,32 @@ public class Deleted extends Action  {
 	public void setPlayer(Player player) {
 		this.player = player;
 	}
-	
-	
+
+	public Boolean execute() {
+		int test = 0;
+
+		BufferController.deleted.add(this);
+
+		for (Deleted del : BufferController.deleted) {
+			System.out.println("###BUFFERController## Delete action " + del.getPlayer().getId() + " other: "
+					+ getSender());
+
+			if (del.getPlayer().getId().equals(getPlayer().getId())) {
+				test++;
+			}
+		}
+
+		if (test == BufferController.mygame.getPlayerList().size() - 1) {
+			System.out.println("###BufferController### Deleted all");
+			BufferController.deleted = new ArrayList<Deleted>();
+			BufferController.block = false;
+			BufferController.tokenBlocker = false;
+			BufferController.cli.returnMove("Move completed");
+
+			PassToken token = new PassToken();
+			token.execute();
+		}
+		return true;
+	}
 
 }
