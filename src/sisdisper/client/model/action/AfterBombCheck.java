@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import sisdisper.client.BufferController;
+import sisdisper.client.model.Buffer;
 import sisdisper.server.model.Area;
 import sisdisper.server.model.Player;
 
@@ -74,8 +75,9 @@ public class AfterBombCheck extends Action {
 
 	public Boolean execute() {
 
-		BufferController.cli.publishString("###AfterBombCheck# Token Blocker" + BufferController.tokenBlocker + " ####");
-
+		BufferController.cli
+				.publishString("###AfterBombCheck# Token Blocker" + BufferController.tokenBlocker + " ####");
+		cancelExplodingBomb();
 
 		if (BufferController.tokenBlocker) {
 			ArrayList<Player> alive = new ArrayList<Player>();
@@ -84,7 +86,7 @@ public class AfterBombCheck extends Action {
 				alive.add(player);
 
 			}
-			
+
 			BufferController.cli.publishString("###AfterBombCheck# Update your nextprev: AfterBombCheck ####");
 
 			UpdateYourNextPrev update = new UpdateYourNextPrev();
@@ -126,6 +128,32 @@ public class AfterBombCheck extends Action {
 
 		}
 		return true;
+	}
+
+	private void cancelExplodingBomb() {
+
+		ArrayList<Action> actions = Buffer.getAllActionsThatNeedsAToken();
+		Action actiotodelete = null;
+		for (Action action : actions) {
+			if (action instanceof ExplodingBomb) {
+				if (((ExplodingBomb) action).player.getId().equals(player.getId())) {
+					actiotodelete = action;
+				}
+			}
+		}
+
+		actions = null;
+		if (actiotodelete != null) {
+			Buffer.deleteAction(actiotodelete);
+		} else {
+			if (!BufferController.tokenBlocker) {
+				BufferController.cli.publishString(
+						"###WelcomeNewPlayer# Something strange happened when i tried to delete the exploding bomb##");
+				BufferController.cli.publishString(
+						"###WelcomeNewPlayer# Didn't find the bomb, but i'm in the afterbombcheck ##");
+			}
+		}
+
 	}
 
 }
