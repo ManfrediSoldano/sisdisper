@@ -5,6 +5,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
+import sisdisper.client.BufferController;
 import sisdisper.client.model.action.Bomb;
 import sisdisper.client.model.action.MoveCLI;
 
@@ -37,8 +38,8 @@ public class GUI {
 	}
 
 	public void startGUI(){
-		if(dim!=null){
-			prepareGUI(this.dim);
+		if(BufferController.mygame!=null){
+			prepareGUI(BufferController.mygame.getDimension());
 			showEventDemo();
 		}
 	}

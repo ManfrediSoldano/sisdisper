@@ -3,7 +3,6 @@ package sisdisper.client.model.action;
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.apache.el.parser.Token;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -12,6 +11,7 @@ import sisdisper.client.BombObservable;
 import sisdisper.client.BufferController;
 import sisdisper.client.ClientToServerCommunication;
 import sisdisper.client.model.Buffer;
+import sisdisper.client.model.Token;
 import sisdisper.client.socket.Client;
 import sisdisper.server.model.Coordinate;
 import sisdisper.server.model.Player;
@@ -35,7 +35,6 @@ public class PassToken extends Action {
 	public Boolean execute() {
 		Boolean first = true;
 		ClientToServerCommunication com = new ClientToServerCommunication();
-
 		while (BufferController.mygame.getPlayerList().size() == 1 || first || BufferController.addingAPlayer) {
 			// Setto che sono già passato:
 			first = false;
@@ -43,20 +42,21 @@ public class PassToken extends Action {
 			// Prendo tutte le azioni che aspettavano un token
 			ArrayList<Action> listactions = new ArrayList<Action>();
 			ArrayList<Action> temp;
-
+			
 			// Se sto aspettando qualche azione non eseguo il token
 			if (!BufferController.block) {
 				temp = Buffer.getAllActionsThatNeedsAToken();
-
+				System.out.println("dopo aver preso le azioni");
 				for (Action action : temp) {
 					listactions.add(action);
 				}
 
 				temp = null;
-
+				System.out.println("dopo averle rilasciate");
 				if (listactions.size() > 0) {
 					for (Action actioninside : listactions) {
 						if (!(actioninside instanceof AddBomb)) {
+							System.out.println("Azione: "+ actioninside);
 							BufferController.cli
 									.publishString("##BUFFERcontroller### " + actioninside.getClass() + "#####");
 						}

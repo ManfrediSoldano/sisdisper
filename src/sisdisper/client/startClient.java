@@ -13,14 +13,9 @@ public class startClient {
 		BufferController buffercontroller = new BufferController();
 		buffercontroller.start();
 		
-		Buffer buffer = new Buffer();
-		AccelerometerManager acc = new AccelerometerManager();
-		BombObservable bomb = new BombObservable();
-		acc.setObservable(bomb);
-		bomb.addObserver(buffer);
-		acc.start();
 		
-		buffercontroller.start();
+		
+		
 		
 	}
 

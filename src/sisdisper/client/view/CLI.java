@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import sisdisper.client.AccelerometerManager;
+import sisdisper.client.BombObservable;
 import sisdisper.client.model.Buffer;
 import sisdisper.client.model.action.AddMeToGame;
 import sisdisper.client.model.action.Bomb;
@@ -91,10 +93,12 @@ public class CLI implements Runnable {
 			player.setPort(port);
 			CLINewPlayer newplayer = new CLINewPlayer();
 			newplayer.setPlayer(player);
+			
 			synchronized (buffer) {
 			observable.setActionChanged(newplayer);
 			
 			}
+			
 			/// Chiedo cosa vuole fare dopo
 			System.err.println( "Thanks for set your username, " + player.getId());
 			System.err.println();
@@ -105,6 +109,7 @@ public class CLI implements Runnable {
 			System.err.println( "Help //Create a new game");
 			System.err.println( "All required inforamtion will be later asked");
 			gui = new GUI();
+			
 			while (notInsideAGame) {
 				try {
 
@@ -116,7 +121,9 @@ public class CLI implements Runnable {
 
 						synchronized (this) {
 							wait();
+							System.err.println( "Fuori dal wait");
 						}
+						
 
 					} else if (action.equals("AddMeOnAGame") || action.equals("2")) {
 						System.err.println("Which game?");
@@ -171,6 +178,12 @@ public class CLI implements Runnable {
 			
 			
 			//GUI STARTING POINT
+			AccelerometerManager acc = new AccelerometerManager();
+			
+			BombObservable bombobservable = new BombObservable();
+			acc.setObservable(bombobservable);
+			bombobservable.addObserver(buffer);
+			acc.start();
 			
 			UserObservable uo=new UserObservable();
 			gui.setObservable(uo);

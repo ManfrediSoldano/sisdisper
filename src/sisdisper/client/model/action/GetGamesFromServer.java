@@ -16,10 +16,13 @@ public class GetGamesFromServer extends Action {
 		ClientToServerCommunication com = new ClientToServerCommunication();
 		GetGames games = com.getGamesFromServer();
 		
-		BufferController.cli.getGames(games);
+		System.out.println("Befroe notify cli");
 		synchronized (BufferController.cli) {
 			BufferController.cli.notifyAll();
 		}
+		BufferController.cli.getGames(games);
+		
+
 		return true;
 	}
 

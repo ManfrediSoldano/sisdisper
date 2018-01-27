@@ -119,7 +119,9 @@ public class BufferController implements Runnable {
 			
 			try{
 			semaphore.release();
+			System.out.println("Befor getting the action");
 			action = Buffer.getFirstAction();
+			System.out.println("After getting the action");
 			action.execute();
 
 			}catch(Exception e){
@@ -131,25 +133,6 @@ public class BufferController implements Runnable {
 
 	}
 
-
-	
-	
-	
-	
-	private void checKAll() {
-
-		System.out.println("##BUFFERcontroller### ACK: ALL CHECKED #####");
-
-		tokenBlocker = false;
-		try {
-			server.sendMessageToAll(new Ack());
-		} catch (JsonProcessingException e) {
-
-			e.printStackTrace();
-		}
-		receivedToken();
-
-	}
 
 
 

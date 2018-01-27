@@ -25,8 +25,7 @@ public class AccelerometerManager implements Runnable {
 		t.start();
 
 		buffer = new Buffer();
-		simulator = new AccelerometerSimulator(sensorbuffer);
-		simulator.run();
+		
 
 	}
 
@@ -41,6 +40,8 @@ public class AccelerometerManager implements Runnable {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void run() {
+		simulator = new AccelerometerSimulator(sensorbuffer);
+		simulator.run();
 		while (true) {
 			try {
 				Thread.sleep(1000);
