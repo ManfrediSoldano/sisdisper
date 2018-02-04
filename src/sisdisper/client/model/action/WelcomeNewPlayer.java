@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import sisdisper.client.BufferController;
 import sisdisper.client.model.Buffer;
 import sisdisper.client.socket.Client;
+import sisdisper.client.socket.ClientObservable;
 import sisdisper.server.model.Player;
 
 public class WelcomeNewPlayer extends Action {
@@ -61,6 +62,9 @@ public class WelcomeNewPlayer extends Action {
 			// Lo agigungo ai miei client
 
 			Client client = new Client(newPlayer);
+			ClientObservable observ = new ClientObservable();
+			client.setClientObserver(observ);
+			observ.addObserver(BufferController.buffer);
 			client.start();
 			// Faccio sì che il nuovo server abbia in mano il mio nome
 			AddMeToYourClients_NotPassToBuffer addMeToYourClients = new AddMeToYourClients_NotPassToBuffer();
@@ -111,10 +115,8 @@ public class WelcomeNewPlayer extends Action {
 				// Avviso il token-peer che può continuare a lavorare
 
 				try {
-					System.out.println("##BUFFERcontroller### SENDING ACK #####");
-					AckNewPlayerAdded ack = new AckNewPlayerAdded();
-					ack.setPlayer(newPlayer);
-					BufferController.server.sendMessageToPlayer(sender, ack);
+					System.out.println("##BUFFERcontroller### SENDING ALLACKCHECKED TO TOKEN PEER -- ONLY ME AND TOKEN PEER ARE CURRENTLY IN THE GAME #####");
+					BufferController.server.sendMessageToPlayer(BufferController.next, new AckAllPlayerAddedTheNewOne());
 
 				} catch (JsonProcessingException e) {
 					e.printStackTrace();

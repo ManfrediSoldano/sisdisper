@@ -44,11 +44,11 @@ public class AskPosition extends Action {
 	}
 
 	public Boolean execute() {
-		BufferController.cli.publishString("###BUFFERController## POSITION REQUESTED BY "+ client.getId() + " #####");
+		BufferController.cli.publishString("###BUFFERController## POSITION REQUESTED BY "+ player.getId() + " #####");
 		ReturnPosition rtn = new ReturnPosition();
 		rtn.setCoordinate(BufferController.me.getCoordinate());
 		try {
-			client.send(rtn);
+			BufferController.server.sendMessageToPlayer(player, rtn);
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 		}

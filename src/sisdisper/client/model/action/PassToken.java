@@ -11,8 +11,9 @@ import sisdisper.client.BombObservable;
 import sisdisper.client.BufferController;
 import sisdisper.client.ClientToServerCommunication;
 import sisdisper.client.model.Buffer;
-import sisdisper.client.model.Token;
+
 import sisdisper.client.socket.Client;
+import sisdisper.client.socket.ClientObservable;
 import sisdisper.server.model.Coordinate;
 import sisdisper.server.model.Player;
 
@@ -21,21 +22,16 @@ public class PassToken extends Action {
 		 * 
 		 */
 	private static final long serialVersionUID = 1L;
-	Token token = new Token();
+	
 	public int i = 0;
 
-	public Token getToken() {
-		return token;
-	}
-
-	public void setToken(Token token) {
-		this.token = token;
-	}
+	
 
 	public Boolean execute() {
 		Boolean first = true;
 		ClientToServerCommunication com = new ClientToServerCommunication();
 		while (BufferController.mygame.getPlayerList().size() == 1 || first || BufferController.addingAPlayer) {
+			
 			// Setto che sono già passato:
 			first = false;
 
@@ -43,16 +39,17 @@ public class PassToken extends Action {
 			ArrayList<Action> listactions = new ArrayList<Action>();
 			ArrayList<Action> temp;
 			
+
 			// Se sto aspettando qualche azione non eseguo il token
 			if (!BufferController.block) {
 				temp = Buffer.getAllActionsThatNeedsAToken();
-				System.out.println("dopo aver preso le azioni");
+				
 				for (Action action : temp) {
 					listactions.add(action);
 				}
 
 				temp = null;
-				System.out.println("dopo averle rilasciate");
+				
 				if (listactions.size() > 0) {
 					for (Action actioninside : listactions) {
 						if (!(actioninside instanceof AddBomb)) {
@@ -134,7 +131,6 @@ public class PassToken extends Action {
 					}
 
 				}
-
 				if (BufferController.me.getCoordinate() != null) {
 					Action action;
 
@@ -221,7 +217,11 @@ public class PassToken extends Action {
 							} else {
 								BufferController.cli.returnMove("New position--> x: " + BufferController.me.getCoordinate().getX() + " and y: "
 										+ BufferController.me.getCoordinate().getY());
+								
 								BufferController.cli.returnMove("Zone: " + BufferController.me.getArea(BufferController.mygame.getDimension()));
+								
+								BufferController.cli.move(BufferController.me.getCoordinate().getX(),BufferController.me.getCoordinate().getY());
+								
 								synchronized (BufferController.cli) {
 									BufferController.cli.notify();
 								}
@@ -251,23 +251,29 @@ public class PassToken extends Action {
 							BombObservable bombobservable = new BombObservable();
 							bombobservable.addObserver(BufferController.buffer);
 							BombManager bomb = new BombManager(BufferController.server, BufferController.me, BufferController.me.area, bombobservable);
+							
 							BufferController.cli.returnBomb("You have launched a bomb in the " + BufferController.me.area
 									+ " sector! You'll now have 5 second to escape from that area.");
+							
 							bomb.start();
+							
 							BufferController.me.area = null;
 
 						}
 					}
 				} else {
+					
 					//NON ho ancora una posizione
 					try {
 
 						if (BufferController.mygame.getPlayerList().size() != 1) {
 							if (!BufferController.addingAPlayer) {
+								
 								BufferController.cli
 										.publishString("##BUFFERcontroller### ASKING OTHER POSITIONS #####");
-
-								BufferController.server.sendMessageToAll(new AskPosition());
+								AskPosition ask = new AskPosition();
+								ask.setPlayer(BufferController.me);
+								BufferController.server.sendMessageToAll(ask);
 								BufferController.tokenBlocker = true;
 							}
 						} else {
@@ -276,9 +282,14 @@ public class PassToken extends Action {
 							Coordinate coordinata_player = new Coordinate();
 							coordinata_player.setX(x);
 							coordinata_player.setY(y);
+							
 							BufferController.me.setCoordinate(coordinata_player);
+							
+						
+							
 							BufferController.cli.returnMove("Position --> x: " + BufferController.me.getCoordinate().getX() + " and y: "
 									+ BufferController.me.getCoordinate().getY());
+							
 							synchronized (BufferController.cli) {
 								BufferController.cli.notify();
 							}
@@ -301,13 +312,14 @@ public class PassToken extends Action {
 					}
 				}
 			}
-
+			
 			else {
 
 				PassToken passtoken = new PassToken();
 				passtoken.execute();
 
 			}
+			
 		}
 
 		return true;
@@ -316,6 +328,9 @@ public class PassToken extends Action {
 	private void receivedNewPlayerContact(NewPlayer newPlayer) {
 		Player player = newPlayer.getPlayer();
 		Client client = new Client(player);
+		ClientObservable observ = new ClientObservable();
+		client.setClientObserver(observ);
+		observ.addObserver(BufferController.buffer);
 		client.start();
 		AddMeToYourClients addMeToYourClients = new AddMeToYourClients();
 		addMeToYourClients.setPlayer(BufferController.me);

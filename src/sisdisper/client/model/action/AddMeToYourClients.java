@@ -39,6 +39,8 @@ public class AddMeToYourClients extends Action {
 		newp.setPlayer(BufferController.me);
 		try {
 			BufferController.server.sendMessageToPlayer(player, newp);
+			System.out.println("###BUFFERController## Inviato il newplayerresponde al token peer #####");
+
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 		}

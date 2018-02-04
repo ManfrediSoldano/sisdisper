@@ -1,6 +1,5 @@
 package sisdisper.client.model.action;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 import sisdisper.client.BufferController;
 import sisdisper.server.model.Player;
@@ -34,12 +33,13 @@ public class AckAllPlayerAddedTheNewOne extends Action {
 		System.out.println("##BUFFERcontroller### ACK: ALL CHECKED #####");
 
 		BufferController.tokenBlocker = false;
-		try {
-			BufferController.server.sendMessageToAll(new Ack());
-		} catch (JsonProcessingException e) {
+		//try {
+			//BufferController.server.sendMessageToAll(new Ack());
+		//} catch (JsonProcessingException e) {
 
-			e.printStackTrace();
-		}
+		//	e.printStackTrace();
+		//}
+		
 		PassToken token = new PassToken();
 		token.execute();
 		return true;

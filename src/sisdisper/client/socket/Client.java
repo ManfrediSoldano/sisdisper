@@ -12,6 +12,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import sisdisper.client.model.Buffer;
 import sisdisper.client.model.action.Action;
+import sisdisper.client.model.action.AskPosition;
+import sisdisper.client.model.action.MoveCom;
 import sisdisper.server.model.Player;
 /**
  * A simple Swing-based client for the capitalization server. It has a main
@@ -123,11 +125,13 @@ public class Client extends Thread {
 	
 	public void setReceived_text(String received_text) {
 		try {
+		
 		ObjectMapper mapper = new ObjectMapper();
 		String saction = mapper.readValue(received_text, String.class);
 		Action deser = new Action();
 		Action action = deser.deserialize(saction);
-
+		System.out.println("@@@CLIENT@@@ Received: "+action+"@@@");
+	
 		clientObserver.setActionChanged(action);
 		
 

@@ -1,8 +1,5 @@
 package sisdisper.client;
 
-import sisdisper.client.model.Buffer;
-import sisdisper.client.model.CountingSemaphore;
-
 
 public class startClient {
 

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import sisdisper.client.model.Buffer;
 import sisdisper.client.model.action.Ack;
 import sisdisper.client.model.action.Action;
+import sisdisper.client.model.action.NewPlayerResponse;
 import sisdisper.server.model.Player;
 
 
@@ -90,14 +91,12 @@ public class Server implements Runnable {
      	ObjectMapper mapper = new ObjectMapper();
 		String jsonInString = mapper.writeValueAsString(saction);
 		
-		if(action instanceof Ack){
-		//System.out.println("@@@SERVER@@@ SENDING ACK for player: "+player.getId());
-		}
+
 		synchronized(clients){
 		for (ServerClientsHandler client: clients){
-			//System.out.println("@@@SERVER@@@ SENDING ACK for player: "+client.getPlayer_id());
+			System.out.println("@@@SERVER@@@ SENDING to player: "+client.getPlayer_id());
 			if(client.getPlayer_id().equals(player.getId())){
-			//System.out.println("@@@SERVER@@@ SENDING to player"+player.getId()+" @@@@@@@  ");
+			System.out.println("@@@SERVER@@@ SENDING to player"+player.getId()+" this action "+action +"@@@@@@@@") ;
 			 client.sendMessage(jsonInString);
 			}
 		}

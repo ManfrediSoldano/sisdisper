@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import sisdisper.client.BufferController;
 import sisdisper.client.ClientToServerCommunication;
 import sisdisper.client.socket.Client;
+import sisdisper.client.socket.ClientObservable;
 import sisdisper.server.model.Game;
 import sisdisper.server.model.Player;
 import sisdisper.server.model.comunication.AddToGame;
@@ -86,6 +87,9 @@ public class AddMeToGame  extends Action  {
 		for (Player player : BufferController.mygame.getPlayerList()) {
 			if (!player.getId().equals(BufferController.me.getId())) {
 				Client client = new Client(player);
+				ClientObservable observ = new ClientObservable();
+				client.setClientObserver(observ);
+				observ.addObserver(BufferController.buffer);
 				BufferController.clients.add(client);
 				client.start();
 			}

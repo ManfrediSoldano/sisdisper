@@ -97,9 +97,11 @@ public class BufferController implements Runnable {
 
 		cli = new CLI();
 		cli.setBuffer(buffer);
+		
 		UserObservable observable = new UserObservable();
 		cli.setObservable(observable);
 		observable.addObserver(buffer);
+		
 		cli.start();
 
 	}
@@ -125,7 +127,8 @@ public class BufferController implements Runnable {
 			action.execute();
 
 			}catch(Exception e){
-				
+				System.out.println("Exception:" +e.toString());
+
 			}
 			
 

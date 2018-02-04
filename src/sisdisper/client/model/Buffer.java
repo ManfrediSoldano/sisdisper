@@ -34,8 +34,8 @@ public class Buffer implements Observer{
     public void update(Observable obj, Object arg) {
     	Action action = (Action)arg;
     	System.out.println("Inside the update function of buffer"+obj+arg);
-    	if (!(action instanceof MoveCLI) && !(action instanceof Bomb) && !(action instanceof NewPlayer)
-				&& !(action instanceof AddBomb)) {
+    	
+    	if (!(action instanceof MoveCLI) && !(action instanceof Bomb) && !(action instanceof NewPlayer)	&& !(action instanceof AddBomb) && !(action instanceof NewPlayerResponse)) {
     		
     		synchronized (actions) {
     			System.out.println("Action:" +action);

@@ -18,7 +18,7 @@ public class GUI {
 	private int x =0;
 	private int y=0;
 	private UserObservable observable=null;
-	
+	public boolean live = false;
 	public UserObservable getObservable() {
 		return observable;
 	}
@@ -41,10 +41,12 @@ public class GUI {
 		if(BufferController.mygame!=null){
 			prepareGUI(BufferController.mygame.getDimension());
 			showEventDemo();
+			live=true;
 		}
 	}
 
 	private void prepareGUI(int dim) {
+		dim++;
 		mainFrame = new JFrame("MMORG");
 		mainFrame.setTitle("MMORG");
 		mainFrame.setAlwaysOnTop(true);
@@ -61,6 +63,7 @@ public class GUI {
 		txtpnStarting.setBounds(0, 0, 516, 175);
 		txtpnStarting.setForeground(Color.BLACK);
 		txtpnStarting.setBackground(Color.WHITE);
+		
 		mainFrame.getContentPane().add(txtpnStarting);
 
 		table = new JTable();
@@ -74,6 +77,7 @@ public class GUI {
 		controlPanel.setBounds(0, 396, 516, 217);
 		mainFrame.getContentPane().add(controlPanel);
 		mainFrame.setVisible(true);
+		this.dim = dim;
 	}
 
 	private void showEventDemo() {
@@ -127,15 +131,25 @@ public class GUI {
 	}
 
 	public void addText(String text){
+		String[] lines = txtpnStarting.getText().split("\r\n");
+		   	
+		if(lines.length>10) {
+			txtpnStarting.setText("");
+		}
 		txtpnStarting.setText(txtpnStarting.getText().concat(System.lineSeparator().concat(text)));
 	}
 	
 	public void move(int x, int y) {
-		if (x >= 0 && x <= dim && y >= 0 && y <= dim) {
-			table.setValueAt("X", y, x);
+		y++;
+		if (x >= 0 && x <= dim && dim-y >= 0 && dim-y <= dim) {
+			
+			table.setValueAt("X", dim-y, x);
+			
 			table.setValueAt("", this.y, this.x);
+			
 			this.x=x;
-			this.y=y;
+			this.y=dim-y;
+			
 		}
 	}
 	public void bomb(int x, int y) {

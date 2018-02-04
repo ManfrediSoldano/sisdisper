@@ -28,9 +28,9 @@ public class CLI implements Runnable {
 	Boolean lock = true;
 	private BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 	public static final String ANSI_RED = "\u001B[31m";
-	UserObservable observable =null;
-	GUI gui=null;
-	
+	UserObservable observable = null;
+	GUI gui = null;
+
 	public UserObservable getObservable() {
 		return observable;
 	}
@@ -51,12 +51,12 @@ public class CLI implements Runnable {
 	@Override
 	public void run() {
 		try {
-		
+
 			String address;
 			int port;
 			// Imposto il giocatore
-			System.err.println( "Welcome to MMOG");
-			System.err.println( "Set your unique username:");
+			System.err.println("Welcome to MMOG");
+			System.err.println("Set your unique username:");
 			String name = br.readLine();
 			if (name.equals("ttest")) {
 				name = "tTest";
@@ -66,7 +66,7 @@ public class CLI implements Runnable {
 				name = "pTest";
 				address = "localhost";
 				port = 335;
-			}else if (name.equals("ytest")) {
+			} else if (name.equals("ytest")) {
 				name = "yTest";
 				address = "localhost";
 				port = 336;
@@ -83,7 +83,7 @@ public class CLI implements Runnable {
 				address = "localhost";
 				port = 339;
 			} else {
-				System.err.println( "Set your ip address:");
+				System.err.println("Set your ip address:");
 				address = br.readLine();
 				port = getPort();
 			}
@@ -93,23 +93,23 @@ public class CLI implements Runnable {
 			player.setPort(port);
 			CLINewPlayer newplayer = new CLINewPlayer();
 			newplayer.setPlayer(player);
-			
+
 			synchronized (buffer) {
-			observable.setActionChanged(newplayer);
-			
+				observable.setActionChanged(newplayer);
+
 			}
-			
+
 			/// Chiedo cosa vuole fare dopo
-			System.err.println( "Thanks for set your username, " + player.getId());
+			System.err.println("Thanks for set your username, " + player.getId());
 			System.err.println();
-			System.err.println( "Possible Actions:");
-			System.err.println( "1 GetGames //return all active games from server");
-			System.err.println( "2 AddMeOnAGame //Get inside a game");
-			System.err.println( "3 CreateANewGame //Create a new game");
-			System.err.println( "Help //Create a new game");
-			System.err.println( "All required inforamtion will be later asked");
+			System.err.println("Possible Actions:");
+			System.err.println("1 GetGames //return all active games from server");
+			System.err.println("2 AddMeOnAGame //Get inside a game");
+			System.err.println("3 CreateANewGame //Create a new game");
+			System.err.println("Help //Create a new game");
+			System.err.println("All required inforamtion will be later asked");
 			gui = new GUI();
-			
+
 			while (notInsideAGame) {
 				try {
 
@@ -117,13 +117,10 @@ public class CLI implements Runnable {
 					if (action.equals("GetGames") || action.equals("1")) {
 						observable.setActionChanged(new GetGamesFromServer());
 
-						
-
 						synchronized (this) {
 							wait();
-							System.err.println( "Fuori dal wait");
+							System.err.println("Fuori dal wait");
 						}
-						
 
 					} else if (action.equals("AddMeOnAGame") || action.equals("2")) {
 						System.err.println("Which game?");
@@ -134,8 +131,6 @@ public class CLI implements Runnable {
 						AddMeToGame add = new AddMeToGame();
 						add.setGame(gametobeadded);
 						observable.setActionChanged(add);
-						
-						
 
 						synchronized (this) {
 							wait();
@@ -154,8 +149,7 @@ public class CLI implements Runnable {
 						CreateGame create = new CreateGame();
 						create.setGame(gameToBeCreated);
 						observable.setActionChanged(create);
-						
-						
+
 						synchronized (this) {
 							wait();
 						}
@@ -175,25 +169,23 @@ public class CLI implements Runnable {
 					e.printStackTrace();
 				}
 			}
-			
-			
-			//GUI STARTING POINT
+
+			// GUI STARTING POINT
 			AccelerometerManager acc = new AccelerometerManager();
-			
+
 			BombObservable bombobservable = new BombObservable();
 			acc.setObservable(bombobservable);
 			bombobservable.addObserver(buffer);
 			acc.start();
-			
-			UserObservable uo=new UserObservable();
+
+			UserObservable uo = new UserObservable();
 			gui.setObservable(uo);
 			uo.addObserver(buffer);
 			gui.startGUI();
-			
-			
+
 			System.err.println();
 			System.err.println();
-			System.err.println( "Possible Actions inside the game:");
+			System.err.println("Possible Actions inside the game:");
 			System.err.println("Move up (you can also use 1)");
 			System.err.println("Move down (you can also use 2)");
 			System.err.println("Move left (you can also use 3)");
@@ -207,39 +199,26 @@ public class CLI implements Runnable {
 					Bomb bomb = new Bomb();
 					observable.setActionChanged(bomb);
 
-			
-					
-					
-
 				} else if (receivedCommand.equals("Move up") || receivedCommand.equals("1")) {
 					MoveCLI movecli = new MoveCLI();
 					movecli.setWhere(MoveCLI.Where.UP);
 					observable.setActionChanged(movecli);
 
-					
-					
 				} else if (receivedCommand.equals("Move down") || receivedCommand.equals("2")) {
 					MoveCLI movecli = new MoveCLI();
 					movecli.setWhere(MoveCLI.Where.DOWN);
 					observable.setActionChanged(movecli);
 
-					
-					
 				} else if (receivedCommand.equals("Move left") || receivedCommand.equals("3")) {
 					MoveCLI movecli = new MoveCLI();
 					movecli.setWhere(MoveCLI.Where.LEFT);
 					observable.setActionChanged(movecli);
 
-					
-
-					
 				} else if (receivedCommand.equals("Move right") || receivedCommand.equals("4")) {
 					MoveCLI movecli = new MoveCLI();
 					movecli.setWhere(MoveCLI.Where.RIGHT);
 					observable.setActionChanged(movecli);
 
-					
-					
 				} else {
 					System.err.println("Wrong command");
 				}
@@ -295,31 +274,56 @@ public class CLI implements Runnable {
 	}
 
 	public void returnCreated(String string, Boolean inside, Boolean token) {
-		
+
 		System.err.println(string);
 		notInsideAGame = inside;
-		if(token)
-		{
+		if (token) {
 			PassToken actionToken = new PassToken();
 			observable.setActionChanged(actionToken);
 		}
-		
+
 	}
 
 	public void returnMove(String string) {
 		System.err.println(string);
-		gui.addText(string);
+		if (gui.live) {
+			gui.addText(string);
+		}
 	}
 
 	public void returnBomb(String string) {
 		System.err.println(string);
-		gui.addText(string);
+		if (gui.live) {
+			gui.addText(string);
+		}
 
 	}
-	
-	public void publishString(String string){
+
+	public void publishString(String string) {
 		System.err.println(string);
-		gui.addText(string);
+		if (gui.live) {
+			gui.addText(string);
+		}
+	}
+
+	public void move(int x, int y) {
+		if (gui.live) {
+		
+			gui.move(x, y);
+			
+		}
+	}
+
+	public void bomb(int x, int y) {
+		if (gui.live) {
+			gui.bomb(x, y);
+		}
+	}
+
+	public void explodedBomb(int x, int y) {
+		if (gui.live) {
+			gui.explodedBomb(x, y);
+		}
 	}
 
 }

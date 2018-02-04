@@ -139,6 +139,7 @@ public class ResponseMove extends Action {
 			BufferController.cli.returnMove("Zone: " + BufferController.me.getArea(BufferController.mygame.getDimension()));
 			BufferController.responseMoves = new ArrayList<ResponseMove>();
 			
+			BufferController.cli.move(BufferController.me.getCoordinate().getX(),BufferController.me.getCoordinate().getY());
 			synchronized (BufferController.cli) {
 				BufferController.cli.notify();
 			}

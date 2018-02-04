@@ -53,13 +53,14 @@ public class MoveCom extends Action {
 			response.setPlayer(BufferController.me);
 			response.setNext(BufferController.next);
 			response.setPrev(BufferController.prev);
+			
 			BufferController.cli.publishString("My next: " + BufferController.next + " my prev: " + BufferController.prev );
 			response.setResponse(ResponseMove.Response.KILLED_ME);
 
 			BufferController.cli.publishString("Killed by" + player.getId());
 
 			try {
-				client.send(response);
+				BufferController.server.sendMessageToPlayer(player, response);
 			} catch (JsonProcessingException e) {
 				e.printStackTrace();
 			}
@@ -75,7 +76,7 @@ public class MoveCom extends Action {
 			response.setPlayer(BufferController.me);
 			response.setResponse(ResponseMove.Response.ACK);
 			try {
-				client.send(response);
+				BufferController.server.sendMessageToPlayer(player, response);
 			} catch (JsonProcessingException e) {
 				e.printStackTrace();
 			}

@@ -16,6 +16,7 @@ import sisdisper.client.model.action.Action;
 import sisdisper.client.model.action.AddMeToYourClients;
 import sisdisper.client.model.action.AddMeToYourClients_NotPassToBuffer;
 import sisdisper.client.model.action.NewPlayer;
+import sisdisper.client.model.action.NewPlayerResponse;
 import sisdisper.client.model.action.PassToken;
 
 public class ServerClientsHandler extends Thread {
