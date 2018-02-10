@@ -10,6 +10,7 @@ import java.util.Scanner;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import sisdisper.client.model.Alive;
 import sisdisper.client.model.Buffer;
 import sisdisper.client.model.action.Action;
 import sisdisper.client.model.action.AskPosition;
@@ -29,6 +30,7 @@ public class Client extends Thread {
 	private String received_text;
 	private Player player;
 	private Buffer buffer;
+	private Socket socket;
 	public Boolean end=false;
 	public ClientObservable clientObserver= null;
 	
@@ -81,8 +83,9 @@ public class Client extends Thread {
 		// Get the server address from a dialog box.
 
 		// Make connection and initialize streams
-		@SuppressWarnings("resource")
-		Socket socket = new Socket(ip, port);
+		
+		
+		socket = new Socket(ip, port);
 		in = new Scanner(socket.getInputStream());
 		out = new PrintWriter(socket.getOutputStream(), true);
 
@@ -92,7 +95,7 @@ public class Client extends Thread {
 
 	public void run() {
 		try {
-			while (!end) {
+			while (Alive.alive) {
 
 				try {
 
@@ -109,6 +112,14 @@ public class Client extends Thread {
 			e.printStackTrace();
 		} catch (Throwable t) {
 			t.printStackTrace();
+		}
+		
+		in.close();
+		out.close();
+		try {
+			socket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 

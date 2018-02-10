@@ -11,6 +11,7 @@ import sisdisper.client.model.CountingSemaphore;
 import sisdisper.client.model.action.Action;
 import sisdisper.client.model.action.AddBomb;
 import sisdisper.client.model.action.Bomb;
+import sisdisper.client.model.action.ExplodingBomb;
 import sisdisper.client.model.action.MoveCLI;
 import sisdisper.client.model.action.NewPlayer;
 import sisdisper.client.model.action.NewPlayerResponse;
@@ -35,7 +36,7 @@ public class Buffer implements Observer{
     	Action action = (Action)arg;
     	System.out.println("Inside the update function of buffer"+obj+arg);
     	
-    	if (!(action instanceof MoveCLI) && !(action instanceof Bomb) && !(action instanceof NewPlayer)	&& !(action instanceof AddBomb) && !(action instanceof NewPlayerResponse)) {
+    	if (!(action instanceof MoveCLI) && !(action instanceof Bomb) && !(action instanceof NewPlayer)	&& !(action instanceof AddBomb) && !(action instanceof ExplodingBomb) && !(action instanceof NewPlayerResponse)) {
     		
     		synchronized (actions) {
     			System.out.println("Action:" +action);
@@ -59,7 +60,7 @@ public class Buffer implements Observer{
 			if (!actionsThatNeedsAToken.isEmpty()) {
 
 				Action action = actionsThatNeedsAToken.get(0);
-				if (!(action instanceof NewPlayer) && !(action instanceof NewPlayerResponse)) {
+				if (!(action instanceof NewPlayer) && !(action instanceof NewPlayerResponse) && !(action instanceof ExplodingBomb)) {
 					actionsThatNeedsAToken.remove(0);
 					return action;
 				}

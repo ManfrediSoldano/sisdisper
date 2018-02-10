@@ -3,13 +3,13 @@ package sisdisper.client.model.action;
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import sisdisper.client.BombManager;
 import sisdisper.client.BombObservable;
 import sisdisper.client.BufferController;
 import sisdisper.client.ClientToServerCommunication;
+import sisdisper.client.model.Alive;
 import sisdisper.client.model.Buffer;
 
 import sisdisper.client.socket.Client;
@@ -22,38 +22,36 @@ public class PassToken extends Action {
 		 * 
 		 */
 	private static final long serialVersionUID = 1L;
-	
-	public int i = 0;
 
-	
+	public int i = 0;
 
 	public Boolean execute() {
 		Boolean first = true;
 		ClientToServerCommunication com = new ClientToServerCommunication();
-		while (BufferController.mygame.getPlayerList().size() == 1 || first || BufferController.addingAPlayer) {
-			
+		while ((BufferController.mygame.getPlayerList().size() == 1 || first || BufferController.addingAPlayer)
+				&& (Alive.alive)) {
+
 			// Setto che sono già passato:
 			first = false;
 
 			// Prendo tutte le azioni che aspettavano un token
 			ArrayList<Action> listactions = new ArrayList<Action>();
 			ArrayList<Action> temp;
-			
 
 			// Se sto aspettando qualche azione non eseguo il token
 			if (!BufferController.block) {
 				temp = Buffer.getAllActionsThatNeedsAToken();
-				
+
 				for (Action action : temp) {
 					listactions.add(action);
 				}
 
 				temp = null;
-				
+
 				if (listactions.size() > 0) {
 					for (Action actioninside : listactions) {
 						if (!(actioninside instanceof AddBomb)) {
-							System.out.println("Azione: "+ actioninside);
+							System.out.println("Azione: " + actioninside);
 							BufferController.cli
 									.publishString("##BUFFERcontroller### " + actioninside.getClass() + "#####");
 						}
@@ -95,39 +93,52 @@ public class PassToken extends Action {
 					} else if (actioninside instanceof ExplodingBomb) {
 						BufferController.cli.publishString("##BUFFERcontroller### Exploding Bomb  #####");
 
-						BufferController.tokenBlocker = true;
+						if (BufferController.mygame.getPlayerList().size() == 1) {
+							if (((ExplodingBomb) actioninside).area == BufferController.me
+									.getArea(BufferController.mygame.getDimension())) {
 
-						AfterBombCheck afterbombcheck = new AfterBombCheck();
-						afterbombcheck.setArea(((ExplodingBomb) actioninside).area);
-						afterbombcheck.setPlayer(((ExplodingBomb) actioninside).player);
-						afterbombcheck.setToken(BufferController.me);
+								BufferController.cli.returnBomb("Bomb killed you.");
+								com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId());
+								Alive.alive=false;
+								
 
-						if (((ExplodingBomb) actioninside).area == BufferController.me
-								.getArea(BufferController.mygame.getDimension())) {
-
-							BufferController.cli.returnBomb("Bomb killed you.");
-							com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId());
-
+							}
 						} else {
-							afterbombcheck.add(BufferController.me);
-							BufferController.cli.returnBomb("Bomb didn't kill you.");
+
+							BufferController.tokenBlocker = true;
+
+							AfterBombCheck afterbombcheck = new AfterBombCheck();
+							afterbombcheck.setArea(((ExplodingBomb) actioninside).area);
+							afterbombcheck.setPlayer(((ExplodingBomb) actioninside).player);
+							afterbombcheck.setToken(BufferController.me);
+
+							if (((ExplodingBomb) actioninside).area == BufferController.me
+									.getArea(BufferController.mygame.getDimension())) {
+
+								BufferController.cli.returnBomb("Bomb killed you.");
+								com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId());
+
+							} else {
+								afterbombcheck.add(BufferController.me);
+								BufferController.cli.returnBomb("Bomb didn't kill you.");
+							}
+							BufferController.cli.publishString("##BUFFERcontroller### ADDING TO LIST  #####");
+
+							// synchronized (buffer) {
+							Buffer.deleteAction(actioninside);
+							// }
+
+							try {
+								BufferController.cli.publishString("##BUFFERcontroller### Sending to NEXT  #####");
+
+								BufferController.server.sendMessageToPlayer(BufferController.next, afterbombcheck);
+								BufferController.cli.publishString("##BUFFERcontroller### Sent to NEXT  #####");
+							} catch (JsonProcessingException e) {
+								e.printStackTrace();
+							}
+
+							return true;
 						}
-						BufferController.cli.publishString("##BUFFERcontroller### ADDING TO LIST  #####");
-
-						// synchronized (buffer) {
-						Buffer.deleteAction(actioninside);
-						// }
-
-						try {
-							BufferController.cli.publishString("##BUFFERcontroller### Sending to NEXT  #####");
-
-							BufferController.server.sendMessageToPlayer(BufferController.next, afterbombcheck);
-							BufferController.cli.publishString("##BUFFERcontroller### Sent to NEXT  #####");
-						} catch (JsonProcessingException e) {
-							e.printStackTrace();
-						}
-
-						return true;
 					}
 
 				}
@@ -215,13 +226,16 @@ public class PassToken extends Action {
 								}
 
 							} else {
-								BufferController.cli.returnMove("New position--> x: " + BufferController.me.getCoordinate().getX() + " and y: "
-										+ BufferController.me.getCoordinate().getY());
-								
-								BufferController.cli.returnMove("Zone: " + BufferController.me.getArea(BufferController.mygame.getDimension()));
-								
-								BufferController.cli.move(BufferController.me.getCoordinate().getX(),BufferController.me.getCoordinate().getY());
-								
+								BufferController.cli
+										.returnMove("New position--> x: " + BufferController.me.getCoordinate().getX()
+												+ " and y: " + BufferController.me.getCoordinate().getY());
+
+								BufferController.cli.returnMove(
+										"Zone: " + BufferController.me.getArea(BufferController.mygame.getDimension()));
+
+								BufferController.cli.move(BufferController.me.getCoordinate().getX(),
+										BufferController.me.getCoordinate().getY());
+
 								synchronized (BufferController.cli) {
 									BufferController.cli.notify();
 								}
@@ -232,8 +246,9 @@ public class PassToken extends Action {
 					} else if (action instanceof AddBomb) {
 						if (BufferController.me.area == null) {
 							BufferController.me.area = ((AddBomb) action).area;
-							BufferController.cli.returnBomb("Thanks to your accelerometer you have acquired a new bomb for the "
-									+ BufferController.me.area + " sector!");
+							BufferController.cli
+									.returnBomb("Thanks to your accelerometer you have acquired a new bomb for the "
+											+ BufferController.me.area + " sector!");
 
 						}
 						// ADVICE BOMB
@@ -250,25 +265,27 @@ public class PassToken extends Action {
 						else {
 							BombObservable bombobservable = new BombObservable();
 							bombobservable.addObserver(BufferController.buffer);
-							BombManager bomb = new BombManager(BufferController.server, BufferController.me, BufferController.me.area, bombobservable);
-							
-							BufferController.cli.returnBomb("You have launched a bomb in the " + BufferController.me.area
-									+ " sector! You'll now have 5 second to escape from that area.");
-							
+							BombManager bomb = new BombManager(BufferController.server, BufferController.me,
+									BufferController.me.area, bombobservable);
+
+							BufferController.cli
+									.returnBomb("You have launched a bomb in the " + BufferController.me.area
+											+ " sector! You'll now have 5 second to escape from that area.");
+
 							bomb.start();
-							
+
 							BufferController.me.area = null;
 
 						}
 					}
 				} else {
-					
-					//NON ho ancora una posizione
+
+					// NON ho ancora una posizione
 					try {
 
 						if (BufferController.mygame.getPlayerList().size() != 1) {
 							if (!BufferController.addingAPlayer) {
-								
+
 								BufferController.cli
 										.publishString("##BUFFERcontroller### ASKING OTHER POSITIONS #####");
 								AskPosition ask = new AskPosition();
@@ -282,14 +299,13 @@ public class PassToken extends Action {
 							Coordinate coordinata_player = new Coordinate();
 							coordinata_player.setX(x);
 							coordinata_player.setY(y);
-							
+
 							BufferController.me.setCoordinate(coordinata_player);
-							
-						
-							
-							BufferController.cli.returnMove("Position --> x: " + BufferController.me.getCoordinate().getX() + " and y: "
-									+ BufferController.me.getCoordinate().getY());
-							
+
+							BufferController.cli
+									.returnMove("Position --> x: " + BufferController.me.getCoordinate().getX()
+											+ " and y: " + BufferController.me.getCoordinate().getY());
+
 							synchronized (BufferController.cli) {
 								BufferController.cli.notify();
 							}
@@ -304,7 +320,7 @@ public class PassToken extends Action {
 					if (BufferController.mygame.getPlayerList().size() != 1) {
 
 						try {
-							
+
 							BufferController.server.sendMessageToPlayer(BufferController.next, new PassToken());
 						} catch (JsonProcessingException e) {
 							e.printStackTrace();
@@ -312,14 +328,14 @@ public class PassToken extends Action {
 					}
 				}
 			}
-			
+
 			else {
 
 				PassToken passtoken = new PassToken();
 				passtoken.execute();
 
 			}
-			
+
 		}
 
 		return true;

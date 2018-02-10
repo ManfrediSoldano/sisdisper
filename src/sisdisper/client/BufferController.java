@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import sisdisper.client.model.Alive;
 import sisdisper.client.model.Buffer;
 import sisdisper.client.model.CountingSemaphore;
 import sisdisper.client.model.action.Ack;
@@ -103,6 +104,7 @@ public class BufferController implements Runnable {
 		observable.addObserver(buffer);
 		
 		cli.start();
+		
 
 	}
 
@@ -116,7 +118,7 @@ public class BufferController implements Runnable {
 		Action action = new Action();
 		// Add me on a game
 
-		while (!end) {
+		while (Alive.alive) {
 
 			
 			try{

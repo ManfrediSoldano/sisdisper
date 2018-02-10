@@ -4,6 +4,7 @@ package sisdisper.client.socket;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 
+import sisdisper.client.model.Alive;
 import sisdisper.client.model.Buffer;
 import sisdisper.client.model.action.Ack;
 import sisdisper.client.model.action.Action;
@@ -13,6 +14,7 @@ import sisdisper.server.model.Player;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.javafx.property.adapter.PropertyDescriptor.Listener;
 
 /**
  * A server program which accepts requests from clients to capitalize strings.
@@ -43,7 +45,7 @@ public class Server implements Runnable {
 			buffer.getIstance();
 			ServerSocket listener = new ServerSocket(me.getPort());
 			try {
-				while (true) {
+				while (Alive.alive) {
 					ServerClientsHandler client = new ServerClientsHandler(listener.accept());
 					System.out.println("@@@@SERVER@@@@ Client added @@@@@@@@ ");
 					synchronized(clients){
@@ -54,12 +56,14 @@ public class Server implements Runnable {
 					observable.addObserver(buffer);
 					client.start();
 				}
+				listener.close();
 			} finally {
 				listener.close();
 			}
 		} catch (Exception e) {
 
 		}
+		
 	}
 
 	public void start() {

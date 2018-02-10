@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 
 import sisdisper.client.AccelerometerManager;
 import sisdisper.client.BombObservable;
+import sisdisper.client.model.Alive;
 import sisdisper.client.model.Buffer;
 import sisdisper.client.model.action.AddMeToGame;
 import sisdisper.client.model.action.Bomb;
@@ -221,6 +222,9 @@ public class CLI implements Runnable {
 
 				} else {
 					System.err.println("Wrong command");
+				}
+				if(!Alive.alive) {
+					return;
 				}
 
 			}
