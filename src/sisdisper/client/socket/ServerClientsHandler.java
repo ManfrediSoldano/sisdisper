@@ -148,10 +148,10 @@ public class ServerClientsHandler extends Thread {
 					}
 			}
 
-			if (!(action instanceof AddMeToYourClients_NotPassToBuffer)) {
+			
 				observable.setActionChanged(action);
 
-			}
+			
 
 		} catch (IOException e) {
 			e.printStackTrace();

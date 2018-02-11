@@ -124,14 +124,15 @@ public class WelcomeNewPlayer extends Action {
 				}
 			}
 			
-			if(BufferController.ackProcessedBeforeWelcomeNewPlayer) {
+			if(BufferController.acknewplayer && BufferController.addmetoyourclients) {
 				System.out.println("##WelcomeNewPlayer### SENDING ALLACKCHECKED TO TOKEN PEER -- All Ack were elaborated before i reached the welcome new player#####");
 				try {
 					BufferController.server.sendMessageToPlayer(BufferController.next, new AckAllPlayerAddedTheNewOne());
 				} catch (JsonProcessingException e) {
 					e.printStackTrace();
 				}
-				BufferController.ackProcessedBeforeWelcomeNewPlayer=false;
+			}else {
+				BufferController.welcome=true;
 			}
 		}
 

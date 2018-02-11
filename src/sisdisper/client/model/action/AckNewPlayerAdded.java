@@ -37,7 +37,8 @@ public class AckNewPlayerAdded extends Action {
 				if (BufferController.numberAck == (BufferController.mygame.getPlayerList().size() - 2)) {
 					try {
 						System.out.println("#AckNewPlayer## ALL ACK PROCESSED #####");
-						if (BufferController.next != null && BufferController.prev != null) {
+						
+						if (BufferController.welcome && BufferController.addmetoyourclients) {
 							System.out.println("#AckNewPlayer## COMPLETED WELCOME NEW PLAYER #####");
 
 							BufferController.server.sendMessageToPlayer(BufferController.next,
@@ -45,8 +46,8 @@ public class AckNewPlayerAdded extends Action {
 							BufferController.numberAck = 0;
 						} else {
 							System.out.println("#AckNewPlayer## NOT YET COMPLETD WELCOME NEW PLAYER #####");
+							BufferController.acknewplayer=true;
 
-							BufferController.ackProcessedBeforeWelcomeNewPlayer = true;
 						}
 
 					} catch (JsonProcessingException e) {

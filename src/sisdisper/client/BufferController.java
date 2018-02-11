@@ -67,7 +67,6 @@ public class BufferController implements Runnable {
 	public static Player next = null;
 	public static Player prev = null;
 	public static ArrayList<Client> clients = new ArrayList<Client>();
-	public static int numberAck = 0;
 	public static Boolean tokenBlocker = false;
 	public static ArrayList<Coordinate> receivedCoordinate = new ArrayList<Coordinate>();
 	public static Boolean end = false;
@@ -77,9 +76,18 @@ public class BufferController implements Runnable {
 	public static ArrayList<AckAfterBomb> ack = new ArrayList<AckAfterBomb>();
 	public static UpdateYourNextPrev tokenUpdate = new UpdateYourNextPrev();
 	public static ArrayList<Deleted> deleted = new ArrayList<Deleted>();
-	public static Boolean ackProcessedBeforeWelcomeNewPlayer = false;
+	
+	//Adding a player
+	public static Boolean welcome = false;
+	public static Boolean acknewplayer = false;
+	public static Boolean addmetoyourclients = false;
+	public static int numberAck = 0;
+	public static int numberAdd = 0;
+
+
 	public static Boolean addingAPlayer = false;
 	public static Boolean alive = true;
+	
 	//Da capire cosa faccia
 	public static Boolean block = false;
 	
