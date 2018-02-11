@@ -32,7 +32,7 @@ public class PlayerReceivedAPoint extends Action {
 		BufferController.cli.returnMove("Player " + player.getId()
 				+ " has just gained a point, now he have " + getPoints()
 				+ " points");
-		BufferController.cli.returnMove("You have " + points + " points");
+		BufferController.cli.returnMove("You have " + BufferController.points + " points");
 		return true;
 	}
 

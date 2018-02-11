@@ -10,7 +10,7 @@ import java.util.Scanner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import sisdisper.client.model.Alive;
+import sisdisper.client.BufferController;
 import sisdisper.client.model.Buffer;
 import sisdisper.client.model.action.Ack;
 import sisdisper.client.model.action.Action;
@@ -94,7 +94,7 @@ public class ServerClientsHandler extends Thread {
 				e.printStackTrace();
 			}
 
-			while (Alive.alive) {
+			while (BufferController.alive) {
 				try {
 					String whil = in.nextLine();
 

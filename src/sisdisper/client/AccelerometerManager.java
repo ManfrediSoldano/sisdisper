@@ -6,7 +6,6 @@ import sisdisper.client.accelerometer.AccelerometerSimulator;
 import sisdisper.client.accelerometer.Measurement;
 import sisdisper.client.accelerometer.SensorBuffer;
 import sisdisper.client.accelerometer.Simulator;
-import sisdisper.client.model.Alive;
 import sisdisper.client.model.Buffer;
 import sisdisper.client.model.action.AddBomb;
 import sisdisper.server.model.Area;
@@ -48,7 +47,7 @@ public class AccelerometerManager implements Runnable {
 	@Override
 	public void run() {
 		
-		while (Alive.alive) {
+		while (BufferController.alive) {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {

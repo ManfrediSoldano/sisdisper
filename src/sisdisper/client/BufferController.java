@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import sisdisper.client.model.Alive;
 import sisdisper.client.model.Buffer;
 import sisdisper.client.model.CountingSemaphore;
 import sisdisper.client.model.action.Ack;
@@ -65,8 +64,8 @@ public class BufferController implements Runnable {
 	public static Game mygame=null;
 	public static Player me = new Player();
 	public static Server server = new Server();
-	public static Player next = new Player();
-	public static Player prev = new Player();
+	public static Player next = null;
+	public static Player prev = null;
 	public static ArrayList<Client> clients = new ArrayList<Client>();
 	public static int numberAck = 0;
 	public static Boolean tokenBlocker = false;
@@ -78,8 +77,9 @@ public class BufferController implements Runnable {
 	public static ArrayList<AckAfterBomb> ack = new ArrayList<AckAfterBomb>();
 	public static UpdateYourNextPrev tokenUpdate = new UpdateYourNextPrev();
 	public static ArrayList<Deleted> deleted = new ArrayList<Deleted>();
+	public static Boolean ackProcessedBeforeWelcomeNewPlayer = false;
 	public static Boolean addingAPlayer = false;
-
+	public static Boolean alive = true;
 	//Da capire cosa faccia
 	public static Boolean block = false;
 	
@@ -118,23 +118,25 @@ public class BufferController implements Runnable {
 		Action action = new Action();
 		// Add me on a game
 
-		while (Alive.alive) {
+		while (alive) {
 
 			
 			try{
 			semaphore.release();
-			System.out.println("Befor getting the action");
 			action = Buffer.getFirstAction();
-			System.out.println("After getting the action");
+			if(!(action instanceof PassToken))
+			System.out.println("##BC# After getting the action: "+ action.toString());
 			action.execute();
 
 			}catch(Exception e){
-				System.out.println("Exception:" +e.toString());
+				System.out.println("Exception:" +e.toString()+" from the action: " +action);
 
 			}
 			
 
 		}
+		
+		System.out.println("###BUffercontroller## Uscuto perché alive=false: "+alive);
 
 	}
 

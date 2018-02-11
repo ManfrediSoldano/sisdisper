@@ -69,16 +69,11 @@ public class ResponseMove extends Action {
 				if (responseMove.getResponse() == ResponseMove.Response.KILLED_ME) {
 					BufferController.points++;
 
-					BufferController.cli.returnMove("Killed: " + responseMove.getPlayer().getId());
+					BufferController.cli.returnMove("You've killed: " + responseMove.getPlayer().getId());
+					
 					PlayerReceivedAPoint point = new PlayerReceivedAPoint();
 					point.setPlayer(BufferController.me);
 					point.setPoints(BufferController.points);
-
-					try {
-						BufferController.server.sendMessageToAll(point);
-					} catch (JsonProcessingException e) {
-						e.printStackTrace();
-					}
 
 					if (BufferController.points >= BufferController.winpoint) {
 						BufferController.cli.returnMove("YOU'RE THE WINNER!");
@@ -99,8 +94,15 @@ public class ResponseMove extends Action {
 
 					killed = true;
 					BufferController.tokenBlocker = true;
-
 					BufferController.mygame.removePlayer(responseMove.getPlayer().getId());
+					
+					try {
+						for(Player aliveplayer: BufferController.mygame.getPlayerList()) {
+						BufferController.server.sendMessageToPlayer(aliveplayer,point);
+						}
+					} catch (JsonProcessingException e) {
+						e.printStackTrace();
+					}
 
 					if (BufferController.mygame.getPlayerList().size() != 1) {
 						DeleteMe deleteme = new DeleteMe();
@@ -121,7 +123,9 @@ public class ResponseMove extends Action {
 						}
 
 						try {
-							BufferController.server.sendMessageToAll(deleteme);
+							for(Player aliveplayer: BufferController.mygame.getPlayerList()) {
+								BufferController.server.sendMessageToPlayer(aliveplayer,deleteme);
+								}
 						} catch (JsonProcessingException e) {
 							e.printStackTrace();
 						}
@@ -140,6 +144,7 @@ public class ResponseMove extends Action {
 			BufferController.responseMoves = new ArrayList<ResponseMove>();
 			
 			BufferController.cli.move(BufferController.me.getCoordinate().getX(),BufferController.me.getCoordinate().getY());
+			
 			synchronized (BufferController.cli) {
 				BufferController.cli.notify();
 			}

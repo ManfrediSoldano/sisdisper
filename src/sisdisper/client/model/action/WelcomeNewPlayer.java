@@ -53,12 +53,13 @@ public class WelcomeNewPlayer extends Action {
 	}
 
 	public Boolean execute() {
-		System.out.println("###BUFFERController## WELCOME NEW PLAYER #####");
+		System.out.println("###WelcomeNewPLayer## WELCOME NEW PLAYER #####");
 		cancelNewPlayer();
+		
 		// Caso in cui il nuovo aggiunto non sono io
 		if (!newPlayer.getId().equals(BufferController.me.getId())) {
 
-			System.out.println("##BUFFERcontroller### RECEIVED A NEW ONE #####");
+			System.out.println("##WelcomeNewPlayer### RECEIVED A NEW ONE #####");
 			// Lo agigungo ai miei client
 
 			Client client = new Client(newPlayer);
@@ -87,7 +88,7 @@ public class WelcomeNewPlayer extends Action {
 
 			// Se il giocatore non deve cambiare il next
 			if (!sender.getId().equals(BufferController.next.getId())) {
-				System.out.println("##BUFFERcontroller### SENDING AN ACK TO: " + next.getId() + " #####");
+				System.out.println("##WelcomeNewPlayer### SENDING AN ACK TO: " + next.getId() + " #####");
 
 				try {
 					// Invia un AckNewPlayerAdded al nuovo giocatore indicando
@@ -104,7 +105,7 @@ public class WelcomeNewPlayer extends Action {
 
 		} else {
 			// Vuol dire che io sono stato aggiunto alla partita
-			System.out.println("##BUFFERcontroller### I WAS ADDED #####");
+			System.out.println("##WelcomeNewPlayer### I WAS ADDED #####");
 			// Imposto i next e prev come indicato dal token peer
 			BufferController.next = this.next;
 			BufferController.prev = this.prev;
@@ -115,19 +116,29 @@ public class WelcomeNewPlayer extends Action {
 				// Avviso il token-peer che può continuare a lavorare
 
 				try {
-					System.out.println("##BUFFERcontroller### SENDING ALLACKCHECKED TO TOKEN PEER -- ONLY ME AND TOKEN PEER ARE CURRENTLY IN THE GAME #####");
+					System.out.println("##WelcomeNewPlayer### SENDING ALLACKCHECKED TO TOKEN PEER -- ONLY ME AND TOKEN PEER ARE CURRENTLY IN THE GAME #####");
 					BufferController.server.sendMessageToPlayer(BufferController.next, new AckAllPlayerAddedTheNewOne());
 
 				} catch (JsonProcessingException e) {
 					e.printStackTrace();
 				}
 			}
+			
+			if(BufferController.ackProcessedBeforeWelcomeNewPlayer) {
+				System.out.println("##WelcomeNewPlayer### SENDING ALLACKCHECKED TO TOKEN PEER -- All Ack were elaborated before i reached the welcome new player#####");
+				try {
+					BufferController.server.sendMessageToPlayer(BufferController.next, new AckAllPlayerAddedTheNewOne());
+				} catch (JsonProcessingException e) {
+					e.printStackTrace();
+				}
+				BufferController.ackProcessedBeforeWelcomeNewPlayer=false;
+			}
 		}
 
 		// Se devo cambiare la mia formuazione:
 		if (sender.getId().equals(BufferController.next.getId())
 				&& !newPlayer.getId().equals(BufferController.me.getId())) {
-			System.out.println("##BUFFERcontroller### I'M THE NEXT ONE #####");
+			System.out.println("##WelcomeNewPlayer### I'M THE NEXT ONE #####");
 			BufferController.next = this.next;
 			try {
 				AckNewPlayerAdded ack = new AckNewPlayerAdded();

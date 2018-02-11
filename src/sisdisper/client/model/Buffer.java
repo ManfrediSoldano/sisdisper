@@ -15,6 +15,7 @@ import sisdisper.client.model.action.ExplodingBomb;
 import sisdisper.client.model.action.MoveCLI;
 import sisdisper.client.model.action.NewPlayer;
 import sisdisper.client.model.action.NewPlayerResponse;
+import sisdisper.client.model.action.PassToken;
 
 
 public class Buffer implements Observer{
@@ -34,11 +35,12 @@ public class Buffer implements Observer{
 
     public void update(Observable obj, Object arg) {
     	Action action = (Action)arg;
-    	System.out.println("Inside the update function of buffer"+obj+arg);
+    	
     	
     	if (!(action instanceof MoveCLI) && !(action instanceof Bomb) && !(action instanceof NewPlayer)	&& !(action instanceof AddBomb) && !(action instanceof ExplodingBomb) && !(action instanceof NewPlayerResponse)) {
     		
     		synchronized (actions) {
+    			if(!(action instanceof PassToken))
     			System.out.println("Action:" +action);
 				actions.add(action);
 				

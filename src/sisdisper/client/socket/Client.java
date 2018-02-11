@@ -10,11 +10,10 @@ import java.util.Scanner;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import sisdisper.client.model.Alive;
+import sisdisper.client.BufferController;
 import sisdisper.client.model.Buffer;
 import sisdisper.client.model.action.Action;
-import sisdisper.client.model.action.AskPosition;
-import sisdisper.client.model.action.MoveCom;
+import sisdisper.client.model.action.PassToken;
 import sisdisper.server.model.Player;
 /**
  * A simple Swing-based client for the capitalization server. It has a main
@@ -95,7 +94,7 @@ public class Client extends Thread {
 
 	public void run() {
 		try {
-			while (Alive.alive) {
+			while (BufferController.alive) {
 
 				try {
 
@@ -104,7 +103,7 @@ public class Client extends Thread {
 						setReceived_text(whil);
 					}
 				} catch (Exception exc) {
-					// System.out.println("@@@@CLIENT@@ ERROR @@@@@@@ " + exc);
+					//System.out.println("@@@@CLIENT@@ ERROR @@@@@@@ " + exc);
 				}
 
 			}
@@ -114,11 +113,12 @@ public class Client extends Thread {
 			t.printStackTrace();
 		}
 		
-		in.close();
-		out.close();
+		
 		try {
+			in.close();
+			out.close();
 			socket.close();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -141,6 +141,8 @@ public class Client extends Thread {
 		String saction = mapper.readValue(received_text, String.class);
 		Action deser = new Action();
 		Action action = deser.deserialize(saction);
+		
+		if(!(action instanceof PassToken))
 		System.out.println("@@@CLIENT@@@ Received: "+action+"@@@");
 	
 		clientObserver.setActionChanged(action);

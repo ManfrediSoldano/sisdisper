@@ -57,8 +57,8 @@ public class Deleted extends Action {
 		BufferController.deleted.add(this);
 
 		for (Deleted del : BufferController.deleted) {
-			System.out.println("###BUFFERController## Delete action " + del.getPlayer().getId() + " other: "
-					+ getSender());
+			System.out.println("###Deleted## Delete action " + del.getPlayer().getId() + " other: "
+					+ getSender().getId());
 
 			if (del.getPlayer().getId().equals(getPlayer().getId())) {
 				test++;
@@ -66,14 +66,21 @@ public class Deleted extends Action {
 		}
 
 		if (test == BufferController.mygame.getPlayerList().size() - 1) {
-			System.out.println("###BufferController### Deleted all");
+			System.out.println("###Deleted### Deleted all");
+			
 			BufferController.deleted = new ArrayList<Deleted>();
-			BufferController.block = false;
 			BufferController.tokenBlocker = false;
 			BufferController.cli.returnMove("Move completed");
+			System.out.println("###Deleted### Coordinate, x: "+ BufferController.me.getCoordinate().getX() +" y: " + BufferController.me.getCoordinate().getY());
 
+			BufferController.cli.move(BufferController.me.getCoordinate().getX(),
+					BufferController.me.getCoordinate().getY());
+			
 			PassToken token = new PassToken();
+			token.test=true;
 			token.execute();
+			System.out.println("###Deleted### After token");
+
 		}
 		return true;
 	}

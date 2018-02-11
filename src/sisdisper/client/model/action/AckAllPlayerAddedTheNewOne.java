@@ -30,7 +30,7 @@ public class AckAllPlayerAddedTheNewOne extends Action {
 
 	public Boolean execute() {
 
-		System.out.println("##BUFFERcontroller### ACK: ALL CHECKED #####");
+		System.out.println("##AckAllPlayerAddedTheNewOne### ACK: ALL CHECKED #####");
 
 		BufferController.tokenBlocker = false;
 		//try {

@@ -36,17 +36,26 @@ public class AckNewPlayerAdded extends Action {
 				BufferController.numberAck++;
 				if (BufferController.numberAck == (BufferController.mygame.getPlayerList().size() - 2)) {
 					try {
-						System.out.println("#BUFFERCONTROLLER## ALL ACK PROCESSED #####");
+						System.out.println("#AckNewPlayer## ALL ACK PROCESSED #####");
+						if (BufferController.next != null && BufferController.prev != null) {
+							System.out.println("#AckNewPlayer## COMPLETED WELCOME NEW PLAYER #####");
 
-						BufferController.server.sendMessageToPlayer(BufferController.next, new AckAllPlayerAddedTheNewOne());
-						BufferController.numberAck = 0;
+							BufferController.server.sendMessageToPlayer(BufferController.next,
+									new AckAllPlayerAddedTheNewOne());
+							BufferController.numberAck = 0;
+						} else {
+							System.out.println("#AckNewPlayer## NOT YET COMPLETD WELCOME NEW PLAYER #####");
+
+							BufferController.ackProcessedBeforeWelcomeNewPlayer = true;
+						}
+
 					} catch (JsonProcessingException e) {
 						e.printStackTrace();
 					}
 				}
 			}
 		}
-		
+
 		return true;
 	}
 }

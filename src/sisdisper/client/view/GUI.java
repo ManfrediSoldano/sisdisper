@@ -48,7 +48,7 @@ public class GUI {
 	private void prepareGUI(int dim) {
 		dim++;
 		mainFrame = new JFrame("MMORG");
-		mainFrame.setTitle("MMORG");
+		mainFrame.setTitle("MMORG Player: "+BufferController.me.getId());
 		mainFrame.setAlwaysOnTop(true);
 		mainFrame.setSize(532, 631);
 

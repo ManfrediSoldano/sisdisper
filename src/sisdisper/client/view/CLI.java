@@ -6,7 +6,7 @@ import java.io.InputStreamReader;
 
 import sisdisper.client.AccelerometerManager;
 import sisdisper.client.BombObservable;
-import sisdisper.client.model.Alive;
+import sisdisper.client.BufferController;
 import sisdisper.client.model.Buffer;
 import sisdisper.client.model.action.AddMeToGame;
 import sisdisper.client.model.action.Bomb;
@@ -223,13 +223,17 @@ public class CLI implements Runnable {
 				} else {
 					System.err.println("Wrong command");
 				}
-				if(!Alive.alive) {
+				if (!BufferController.alive) {
+					System.err.println("###CLI## Not Alive, I'm dead.");
 					return;
 				}
 
 			}
 
 		} catch (IOException e) {
+
+			System.out.println("##CLI## Exception: " + e);
+
 		}
 
 	}
@@ -311,11 +315,16 @@ public class CLI implements Runnable {
 	}
 
 	public void move(int x, int y) {
-		if (gui.live) {
-		
-			gui.move(x, y);
-			
+		try {
+			if (gui.live) {
+
+				gui.move(x, y);
+
+			}
+		} catch (Exception e) {
+			System.out.println("##CLI->Move GUI## Exception: " + e);
 		}
+
 	}
 
 	public void bomb(int x, int y) {

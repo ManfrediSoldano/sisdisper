@@ -66,10 +66,10 @@ public class MoveCom extends Action {
 			}
 			
 			com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId());
+			
 			BufferController.end = true;
-			for (Client client : BufferController.clients) {
-				client.end = true;
-			}
+			BufferController.alive=false;
+
 
 		} else {
 			ResponseMove response = new ResponseMove();

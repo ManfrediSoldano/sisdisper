@@ -9,7 +9,6 @@ import sisdisper.client.BombManager;
 import sisdisper.client.BombObservable;
 import sisdisper.client.BufferController;
 import sisdisper.client.ClientToServerCommunication;
-import sisdisper.client.model.Alive;
 import sisdisper.client.model.Buffer;
 
 import sisdisper.client.socket.Client;
@@ -22,14 +21,18 @@ public class PassToken extends Action {
 		 * 
 		 */
 	private static final long serialVersionUID = 1L;
-
+	public boolean test = false;
 	public int i = 0;
 
 	public Boolean execute() {
+		try {
 		Boolean first = true;
 		ClientToServerCommunication com = new ClientToServerCommunication();
+		if(test)
+		System.out.println("###PassToken## TEST: Inside token");
+
 		while ((BufferController.mygame.getPlayerList().size() == 1 || first || BufferController.addingAPlayer)
-				&& (Alive.alive)) {
+				&& (BufferController.alive)) {
 
 			// Setto che sono già passato:
 			first = false;
@@ -53,7 +56,7 @@ public class PassToken extends Action {
 						if (!(actioninside instanceof AddBomb)) {
 							System.out.println("Azione: " + actioninside);
 							BufferController.cli
-									.publishString("##BUFFERcontroller### " + actioninside.getClass() + "#####");
+									.publishString("##InsideToken### " + actioninside.getClass() + "#####");
 						}
 					}
 				}
@@ -62,7 +65,7 @@ public class PassToken extends Action {
 					// ADDING A PLAYER
 
 					if (actioninside instanceof NewPlayer) {
-						BufferController.cli.publishString("##BUFFERcontroller### receivedNewPlayerContact #####");
+						BufferController.cli.publishString("##InsideToken### receivedNewPlayerContact #####");
 
 						BufferController.tokenBlocker = true;
 						// synchronized (Buffer) {
@@ -76,13 +79,13 @@ public class PassToken extends Action {
 						break;
 
 					} else if (actioninside instanceof NewPlayerResponse) {
-						BufferController.cli.publishString("##BUFFERcontroller### taking new player response #####");
+						BufferController.cli.publishString("##InsideToken### taking new player response #####");
 
 						// synchronized (buffer) {
 						Buffer.deleteAction(actioninside);
 						// }
 						BufferController.cli
-								.publishString("##BUFFERcontroller### After deleting new player response  #####");
+								.publishString("##InsideToken### After deleting new player response  #####");
 
 						newPlayerConfirmedToHaveMyClientHandler((NewPlayerResponse) actioninside);
 						BufferController.addingAPlayer = false;
@@ -91,7 +94,7 @@ public class PassToken extends Action {
 
 						// BOMB
 					} else if (actioninside instanceof ExplodingBomb) {
-						BufferController.cli.publishString("##BUFFERcontroller### Exploding Bomb  #####");
+						BufferController.cli.publishString("##InsideToken### Exploding Bomb  #####");
 
 						if (BufferController.mygame.getPlayerList().size() == 1) {
 							if (((ExplodingBomb) actioninside).area == BufferController.me
@@ -99,10 +102,11 @@ public class PassToken extends Action {
 
 								BufferController.cli.returnBomb("Bomb killed you.");
 								com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId());
-								Alive.alive=false;
+								BufferController.alive=false;
 								
 
 							}
+							Buffer.deleteAction(actioninside);
 						} else {
 
 							BufferController.tokenBlocker = true;
@@ -122,17 +126,17 @@ public class PassToken extends Action {
 								afterbombcheck.add(BufferController.me);
 								BufferController.cli.returnBomb("Bomb didn't kill you.");
 							}
-							BufferController.cli.publishString("##BUFFERcontroller### ADDING TO LIST  #####");
+							BufferController.cli.publishString("##InsideToken### ADDING TO LIST  #####");
 
 							// synchronized (buffer) {
 							Buffer.deleteAction(actioninside);
 							// }
 
 							try {
-								BufferController.cli.publishString("##BUFFERcontroller### Sending to NEXT  #####");
+								BufferController.cli.publishString("##InsideToken### Sending to NEXT  #####");
 
 								BufferController.server.sendMessageToPlayer(BufferController.next, afterbombcheck);
-								BufferController.cli.publishString("##BUFFERcontroller### Sent to NEXT  #####");
+								BufferController.cli.publishString("##InsideToken### Sent to NEXT  #####");
 							} catch (JsonProcessingException e) {
 								e.printStackTrace();
 							}
@@ -149,12 +153,12 @@ public class PassToken extends Action {
 
 					// ###### MOVE #####
 					if (action instanceof MoveCLI) {
-						BufferController.cli.publishString("##BUFFERcontroller### MOVE ACTION #####");
+						BufferController.cli.publishString("##InsideToken### MOVE ACTION #####");
 						Boolean done = false;
 
 						// ###### UP #####
 						if (((MoveCLI) action).getWhere() == MoveCLI.Where.UP) {
-							BufferController.cli.publishString("##BUFFERcontroller### UP #####");
+							BufferController.cli.publishString("##InsideToken### UP #####");
 
 							if (BufferController.me.getCoordinate().getY() < (BufferController.mygame.getDimension())) {
 								Coordinate coordinate = BufferController.me.getCoordinate();
@@ -214,7 +218,7 @@ public class PassToken extends Action {
 
 							if (BufferController.mygame.getPlayerList().size() != 1) {
 								BufferController.tokenBlocker = true;
-								BufferController.cli.publishString("##BUFFERcontroller### SENDING #####");
+								BufferController.cli.publishString("##InsideToken### SENDING #####");
 
 								MoveCom movecom = new MoveCom();
 								movecom.setPlayer(BufferController.me);
@@ -287,7 +291,7 @@ public class PassToken extends Action {
 							if (!BufferController.addingAPlayer) {
 
 								BufferController.cli
-										.publishString("##BUFFERcontroller### ASKING OTHER POSITIONS #####");
+										.publishString("##InsideToken### ASKING OTHER POSITIONS #####");
 								AskPosition ask = new AskPosition();
 								ask.setPlayer(BufferController.me);
 								BufferController.server.sendMessageToAll(ask);
@@ -320,8 +324,12 @@ public class PassToken extends Action {
 					if (BufferController.mygame.getPlayerList().size() != 1) {
 
 						try {
-
-							BufferController.server.sendMessageToPlayer(BufferController.next, new PassToken());
+							PassToken token = new PassToken();
+							if(test) {
+								System.out.println("###PassToken## TEST: Passing the token to " +BufferController.next.getId() );
+								token.test=true;
+							}
+							BufferController.server.sendMessageToPlayer(BufferController.next, token);
 						} catch (JsonProcessingException e) {
 							e.printStackTrace();
 						}
@@ -336,6 +344,10 @@ public class PassToken extends Action {
 
 			}
 
+		}
+		}catch (Exception e)
+		{
+			System.out.println("##PassToken## Exception: "+e);
 		}
 
 		return true;
@@ -361,7 +373,7 @@ public class PassToken extends Action {
 			e1.printStackTrace();
 		}
 
-		BufferController.cli.publishString("##BUFFERcontroller### Client informed #####");
+		BufferController.cli.publishString("##InsideToken### Client informed #####");
 
 		// Ricevo una risposta e torno in attesa nel token fino a quando non
 		// ricevo il newplayerresponse e vado sotto
@@ -390,16 +402,16 @@ public class PassToken extends Action {
 
 			try {
 				BufferController.cli
-						.publishString("##BUFFERcontroller### I WAS ALONE ||SENDING to:  " + player.getId() + " #####");
+						.publishString("##InsideToken### I WAS ALONE ||SENDING to:  " + player.getId() + " #####");
 				BufferController.server.sendMessageToPlayer(player, welcomeNew);
-				BufferController.cli.publishString("##BUFFERcontroller### I WAS ALONE ||SENT #####");
+				BufferController.cli.publishString("##InsideToken### I WAS ALONE ||SENT #####");
 			} catch (JsonProcessingException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			// C'è qualcun altro
 		} else {
-			BufferController.cli.publishString("##BUFFERcontroller### I WASN'T ALONE #####");
+			BufferController.cli.publishString("##InsideToken### I WASN'T ALONE #####");
 			welcomeNew.setNext(BufferController.me);
 			welcomeNew.setPrev(BufferController.prev);
 			welcomeNew.setNewPlayer(player);
@@ -410,10 +422,10 @@ public class PassToken extends Action {
 
 			try {
 				BufferController.cli
-						.publishString("##BUFFERcontroller### SENDING TO: " + player.getId() + " As the new one #####");
+						.publishString("##InsideToken### SENDING TO: " + player.getId() + " As the new one #####");
 				BufferController.server.sendMessageToPlayer(player, welcomeNew);
-				BufferController.cli.publishString("##BUFFERcontroller### SENDING TO: " + BufferController.prev.getId()
-						+ " As the old prev #####");
+				BufferController.cli.publishString(
+						"##InsideToken### SENDING TO: " + BufferController.prev.getId() + " As the old prev #####");
 				BufferController.server.sendMessageToPlayer(BufferController.prev, welcomePrev);
 
 				WelcomeNewPlayer notifyall = new WelcomeNewPlayer();
@@ -424,12 +436,12 @@ public class PassToken extends Action {
 					if (!(player_to_all.getId().equals(player.getId()))
 							&& !(player_to_all.getId().equals(BufferController.prev.getId()))
 							&& !(player_to_all.getId().equals(BufferController.me.getId()))) {
-						BufferController.cli.publishString("##BUFFERcontroller### SENDING TO: " + player_to_all.getId()
+						BufferController.cli.publishString("##InsideToken### SENDING TO: " + player_to_all.getId()
 								+ " As general information #####");
 						BufferController.server.sendMessageToPlayer(player_to_all, notifyall);
 					}
 				}
-				BufferController.cli.publishString("##BUFFERcontroller### NEXT player:  " + player.getId() + " #####");
+				BufferController.cli.publishString("##InsideToken### NEXT player:  " + player.getId() + " #####");
 				BufferController.prev = player;
 
 			} catch (JsonProcessingException e) {
