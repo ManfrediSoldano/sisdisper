@@ -5,15 +5,17 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 
 @XmlRootElement(name = "Game")
 public class Game implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private ArrayList<Player> playerList = new ArrayList<Player>();
-	private ArrayList<Player> deadPlayers = new ArrayList<Player>();
+	public ArrayList<Player> deadPlayers = new ArrayList<Player>();
 	public Boolean live = true;
-
+	public Date start;
+	public Date end;
 	public void setPlayerList(ArrayList<Player> playerList) {
 		this.playerList = playerList;
 	}

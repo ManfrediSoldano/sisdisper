@@ -1,6 +1,12 @@
 package sisdisper.server.controller;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.ws.rs.container.AsyncResponse;
 
 import sisdisper.server.model.Game;
 import sisdisper.server.model.Player;
@@ -11,6 +17,7 @@ import sisdisper.server.model.comunication.ResponseAddToGame;
 
 public class RestServer {
 	private static RestServer instance = null;
+	final static Map<String, AsyncResponse> waiters = new ConcurrentHashMap<>();  
 
 	public static RestServer getIstance() {
 		if (instance == null) {
@@ -50,10 +57,15 @@ public class RestServer {
 			}
 		}
 
-		if (games.add(game))
-			return "ack";
+		game.start= new Date();
+		games.add(game);
+		Set<String> nicks = waiters.keySet();  
 
-		return "En error occured";
+		for (String n : nicks) {
+			
+			waiters.get(n).resume("A new game has just started: "+game.getId());
+		}
+			return "ack";
 	}
 
 	public synchronized ResponseAddToGame addMeOnAGame(AddToGame add) {
@@ -92,6 +104,21 @@ public class RestServer {
 						
 						if (checkGame.getPlayerList().isEmpty()) {
 							checkGame.live = false;
+							checkGame.end = new Date();
+							long time = ((checkGame.end.getTime()/60000) - (checkGame.start.getTime()/60000));
+							String win ="";
+							
+							for (Player playe: checkGame.deadPlayers ) {
+								if (playe.winner.equals("winner"))
+									win= player.getId();	
+							}
+							
+							Set<String> nicks = waiters.keySet();  
+							
+							for (String n : nicks) {
+								waiters.get(n).resume("This game has just end: "+checkGame.getId()+" the match has ended after "+time+" minutes. The winner is "+ win);
+							}
+							
 						}
 						
 						return "Deleted";
@@ -119,4 +146,13 @@ public class RestServer {
 		return response;
 	}
 
+	
+	public synchronized Game getGame(String playerid) {
+		for (Game checkGame : games) {
+			if (checkGame.getId().equals(playerid)) {
+				return checkGame;
+			}
+			}
+		return null;
+	}
 }

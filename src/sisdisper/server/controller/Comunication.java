@@ -1,9 +1,11 @@
 package sisdisper.server.controller;
 
 
+import java.util.Map;
 import java.util.Observable;
+import java.util.concurrent.ConcurrentHashMap;
 
-
+import javax.servlet.annotation.WebServlet;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -13,9 +15,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-
-
-
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.Suspended;
 
 import sisdisper.server.model.Game;
 import sisdisper.server.model.comunication.AddToGame;
@@ -25,7 +26,6 @@ import sisdisper.server.model.comunication.ResponseAddToGame;
 @Path("/RestServer")
 public class Comunication extends Observable {
 	private RestServer rest;
- 
 	public Comunication() {
 		
 		RestServer.getIstance();
@@ -79,8 +79,36 @@ public class Comunication extends Observable {
 	  @GET
 	  @Path("/analytics/{gameid}")
 	  @Produces(MediaType.APPLICATION_XML)
-	  public GetGames getGame(@PathParam("gameid") String gameid, @PathParam("userid") String userid) {
+	  public Game getGame(@PathParam("gameid") String gameid) {
 
+		return RestServer.getIstance().getGame(gameid);
+	  }
+	  
+	  @GET
+	  @Path("/analytics")
+	  @Produces(MediaType.APPLICATION_XML)
+	  public GetGames getGames() {
+
+		return RestServer.getIstance().getGames();
+	  }
+	  
+	  @GET
+	  @Path("/analytics/players")
+	  @Produces(MediaType.APPLICATION_XML)
+	  public GetGames getPlayers() {
+
+		return RestServer.getIstance().getGames();
+	  }
+	  
+	  @GET
+	  @Path("/analytics/live/{userid}")
+	  @Produces(MediaType.APPLICATION_XML)
+	  public GetGames liveStatus(@Suspended AsyncResponse asyncResp, @PathParam("userid") String userid) {
+		try {
+			RestServer.getIstance().waiters.put(userid, asyncResp);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}  
 		return RestServer.getIstance().getGames();
 	  }
 	  
