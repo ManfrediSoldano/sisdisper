@@ -52,7 +52,7 @@ public class DeleteMe extends Action {
 	public Boolean execute() {
 
 		
-		BufferController.mygame.removePlayer(player.getId());
+		BufferController.mygame.removePlayer(player.getId(), "","");
 		
 		if (next.getId().equals(BufferController.me.getId())) {
 			BufferController.prev = getPrev();

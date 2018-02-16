@@ -19,7 +19,7 @@ public class Player implements Serializable{
 	private int point;
 	//private Boolean alive;
 	public Area area=null;
-	
+	public String winner;
 	private Coordinate coordinate; 
 	public String getId() {
 		return id;

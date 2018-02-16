@@ -124,7 +124,7 @@ public class AckAfterBomb extends Action {
 				}
 				
 
-				com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId());
+				com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId(), Integer.toString(BufferController.me.getPoint()),"winner" );
 				for (Client client : BufferController.clients) {
 					client.end = true;
 				}
@@ -177,7 +177,7 @@ public class AckAfterBomb extends Action {
 				} else {
 					System.out.println("###Buffercontroller## I've died too!###");
 
-					com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId());
+					com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId(), Integer.toString(BufferController.me.getPoint()),"loser");
 				}
 			}
 

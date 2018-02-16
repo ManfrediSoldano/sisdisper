@@ -101,7 +101,7 @@ public class PassToken extends Action {
 									.getArea(BufferController.mygame.getDimension())) {
 
 								BufferController.cli.returnBomb("Bomb killed you.");
-								com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId());
+								com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId(),Integer.toString(BufferController.me.getPoint()),"loser");
 								BufferController.alive=false;
 								
 
@@ -120,7 +120,7 @@ public class PassToken extends Action {
 									.getArea(BufferController.mygame.getDimension())) {
 
 								BufferController.cli.returnBomb("Bomb killed you.");
-								com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId());
+								com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId(),Integer.toString(BufferController.me.getPoint()),"loser");
 
 							} else {
 								afterbombcheck.add(BufferController.me);

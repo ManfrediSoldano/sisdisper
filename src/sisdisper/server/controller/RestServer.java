@@ -2,7 +2,6 @@ package sisdisper.server.controller;
 
 import java.util.ArrayList;
 
-
 import sisdisper.server.model.Game;
 import sisdisper.server.model.Player;
 import sisdisper.server.model.comunication.AddToGame;
@@ -11,92 +10,113 @@ import sisdisper.server.model.comunication.GetGames;
 import sisdisper.server.model.comunication.ResponseAddToGame;
 
 public class RestServer {
-	  private static RestServer instance = null;
-	public static RestServer getIstance(){
-		 if(instance == null) {
-	         instance = new RestServer();
-	      }
-	      return instance;
+	private static RestServer instance = null;
+
+	public static RestServer getIstance() {
+		if (instance == null) {
+			instance = new RestServer();
+		}
+		return instance;
 	}
-	
-	
+
 	private Comunication com;
 	private ArrayList<Game> games = new ArrayList<Game>();
-	public RestServer(){
+	private ArrayList<Player> analitics = new ArrayList<Player>();
+
+	public RestServer() {
 
 	}
-	
-	public synchronized GetGames getGames(){
-		
-		
+
+	public synchronized GetGames getGames() {
+
+		ArrayList<Game> temp = new ArrayList<Game>();
 		GetGames getgames = new GetGames();
-		getgames.setGames(games);
+		for (Game game : games) {
+			if (game.live) {
+				temp.add(game);
+			}
+		}
+
+		getgames.setGames(temp);
 		return getgames;
 	}
-	
 
 	public synchronized String postNewGame(Game game) {
-		String id="id: ";
-		for(Game checkGame: games){
-			
-			id = id+"|"+ checkGame.getId();
-			if(checkGame.getId().equals(game.getId())){
-				 System.out.println("Game already exist");
+
+		for (Game checkGame : games) {
+			if (checkGame.getId().equals(game.getId())) {
+				System.out.println("Game already exist");
 				return "Game already exists";
-			
-			} 
+			}
 		}
-		
-		if(games.add(game))
-		return "ack";		
-		
+
+		if (games.add(game))
+			return "ack";
+
 		return "En error occured";
 	}
 
 	public synchronized ResponseAddToGame addMeOnAGame(AddToGame add) {
 		ResponseAddToGame response = new ResponseAddToGame();
-		
-		for(Game checkGame: games){
-			if(checkGame.getId().equals(add.getGame().getId())){
-				for(Player player: checkGame.getPlayerList()){
-					
-					if(player.getId().equals(add.getPlayer().getId())){
-						response.setType(ResponseAddToGame.Type.AREADY_EXIST);
-						return response;
+
+		for (Game checkGame : games) {
+			if (checkGame.live) {
+				if (checkGame.getId().equals(add.getGame().getId())) {
+					for (Player player : checkGame.getPlayerList()) {
+
+						if (player.getId().equals(add.getPlayer().getId())) {
+							response.setType(ResponseAddToGame.Type.AREADY_EXIST);
+							return response;
+						}
 					}
+
+					checkGame.addPlayer(add.getPlayer());
+					response.setGame(checkGame);
+					response.setType(ResponseAddToGame.Type.ACK);
+					return response;
 				}
-				
-				checkGame.addPlayer(add.getPlayer());
-				response.setGame(checkGame);
-				response.setType(ResponseAddToGame.Type.ACK);
-				return response;
-			} 
+			}
 		}
-		
+
 		response.setType(ResponseAddToGame.Type.GAME_NOT_FOUND);
 		return response;
 	}
 
-	public synchronized String deleteMeFromTheGame(String playerid, String gameid) {
-		for(Game checkGame: games){
-			if(checkGame.getId().equals(gameid)){
-				for(Player player: checkGame.getPlayerList()){
-					if(player.getId().equals(playerid)){
-						checkGame.removePlayer(playerid);
-						if(checkGame.getPlayerList().isEmpty()){
-							games.remove(checkGame);
+	public synchronized String deleteMeFromTheGame(String playerid, String gameid, String points, String winner) {
+		for (Game checkGame : games) {
+			if (checkGame.getId().equals(gameid)) {
+				for (Player player : checkGame.getPlayerList()) {
+					
+					if (player.getId().equals(playerid)) {
+						checkGame.removePlayer(playerid, points,winner);
+						
+						if (checkGame.getPlayerList().isEmpty()) {
+							checkGame.live = false;
 						}
+						
 						return "Deleted";
 					}
 				}
 			}
-				
+
 		}
-		
-	
+
 		return "Error";
 	}
 
-	
+	public synchronized ResponseAddToGame newAnalyst(String playerid, String ip) {
+		ResponseAddToGame response = new ResponseAddToGame();
+		for (Player player : analitics) {
+			if (player.getId() == playerid) {
+				response.setType(ResponseAddToGame.Type.AREADY_EXIST);
+				return response;
+			}
+		}
+		Player newp = new Player();
+		newp.setId(playerid);
+		analitics.add(newp);
+		response.setType(ResponseAddToGame.Type.ACK);
+		return response;
+	}
 
 }

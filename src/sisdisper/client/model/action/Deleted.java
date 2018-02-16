@@ -77,7 +77,7 @@ public class Deleted extends Action {
 					BufferController.me.getCoordinate().getY());
 			
 			PassToken token = new PassToken();
-			token.test=true;
+			token.test=false;
 			token.execute();
 			System.out.println("###Deleted### After token");
 

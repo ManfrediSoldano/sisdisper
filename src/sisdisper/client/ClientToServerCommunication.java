@@ -86,7 +86,7 @@ public class ClientToServerCommunication {
 	}
 	
 	
-	public String deleteMe(String playerid, String gameid){
+	public String deleteMe(String playerid, String gameid, String points, String winner){
 		try {
 
 			 ClientConfig config = new ClientConfig();
@@ -94,7 +94,7 @@ public class ClientToServerCommunication {
 			 
 		      Client client = ClientBuilder.newClient(config);
 		      WebTarget service = client.target(getBaseURI());
-		      String game_received = service.path("delete").path(playerid).path(gameid).request(MediaType.APPLICATION_XML).delete(String.class);
+		      String game_received = service.path("delete").path(playerid).path(gameid).path(points).path(winner).request(MediaType.APPLICATION_XML).delete(String.class);
 		      //String game = service.path("get").request().accept(MediaType.APPLICATION_XML).get(String.class);
 		      System.out.println("###Client2ServerCom## "+game_received+ "####");
 		      return game_received;

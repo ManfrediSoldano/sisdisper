@@ -58,16 +58,31 @@ public class Comunication extends Observable {
 	  }
 	  
 	  @DELETE
-	  @Path("/delete/{userid}/{gameid}")
+	  @Path("/delete/{userid}/{gameid}/{points}/{winner}")
 	  @Consumes(MediaType.APPLICATION_XML)
-	  public String deleteMeFromTheGame(@PathParam("userid") String userid, @PathParam("gameid") String gameid){
+	  public String deleteMeFromTheGame(@PathParam("userid") String userid, @PathParam("gameid") String gameid , @PathParam("points") String points , @PathParam("winner") String winner){
 	 
-		  return RestServer.getIstance().deleteMeFromTheGame(userid,gameid);
+		  return RestServer.getIstance().deleteMeFromTheGame(userid,gameid, points, winner);
 		  
 	  }
 	  
-
+	  //Analytics
+	  
+	  @POST
+	  @Path("/analytics/{userid}/{port}")
+	  @Consumes(MediaType.APPLICATION_XML)
+	  public ResponseAddToGame newAnaliticalPLayer(@PathParam("userid") String userid, @PathParam("port") String ip){
+		  return RestServer.getIstance().newAnalyst(userid,ip);
+		  
+	  }
 	 
+	  @GET
+	  @Path("/analytics/{gameid}")
+	  @Produces(MediaType.APPLICATION_XML)
+	  public GetGames getGame(@PathParam("gameid") String gameid, @PathParam("userid") String userid) {
+
+		return RestServer.getIstance().getGames();
+	  }
 	  
 	
 

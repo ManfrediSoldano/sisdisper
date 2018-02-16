@@ -74,51 +74,56 @@ public class ResponseMove extends Action {
 					PlayerReceivedAPoint point = new PlayerReceivedAPoint();
 					point.setPlayer(BufferController.me);
 					point.setPoints(BufferController.points);
+					killed = true;
+					BufferController.tokenBlocker = true;
+					BufferController.mygame.removePlayer(responseMove.getPlayer().getId(), "","");
+					
 
 					if (BufferController.points >= BufferController.winpoint) {
 						BufferController.cli.returnMove("YOU'RE THE WINNER!");
 						Winner winner = new Winner();
 						winner.setPlayer(BufferController.me);
 						try {
-							BufferController.server.sendMessageToAll(winner);
-						} catch (JsonProcessingException e) {
+							for(Player aliveplayer: BufferController.mygame.getPlayerList()) {
+								BufferController.server.sendMessageToPlayer(aliveplayer,winner);
+								}
+							
+						} catch (Exception e) {
 							e.printStackTrace();
 						}
 						ClientToServerCommunication com = new ClientToServerCommunication();
 
-						com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId());
+						com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId(),Integer.toString(BufferController.me.getPoint()),"winner");
 						for (Client client : BufferController.clients) {
 							client.end = true;
 						}
 					}
 
-					killed = true;
-					BufferController.tokenBlocker = true;
-					BufferController.mygame.removePlayer(responseMove.getPlayer().getId());
+					
 					
 					try {
 						for(Player aliveplayer: BufferController.mygame.getPlayerList()) {
 						BufferController.server.sendMessageToPlayer(aliveplayer,point);
 						}
-					} catch (JsonProcessingException e) {
+					} catch (Exception e) {
 						e.printStackTrace();
 					}
 
 					if (BufferController.mygame.getPlayerList().size() != 1) {
 						DeleteMe deleteme = new DeleteMe();
 						deleteme.setPlayer(player);
-						deleteme.setNext(next);
-						deleteme.setPrev(prev);
+						deleteme.setNext(responseMove.next);
+						deleteme.setPrev(responseMove.prev);
 						deleteme.setSender(BufferController.me);
 
-						if (next.getId().equals(BufferController.me.getId())) {
-							BufferController.prev = prev;
-							BufferController.cli.publishString("####BUFFERController## NEW PREV: " + prev.getId() + " ####");
+						if (responseMove.next.getId().equals(BufferController.me.getId())) {
+							BufferController.prev = responseMove.prev;
+							BufferController.cli.publishString("####BUFFERController## NEW PREV: " + responseMove.prev.getId() + " ####");
 
 						}
-						if (prev.getId().equals(BufferController.me.getId())) {
-							BufferController.next = next;
-							BufferController.cli.publishString("####BUFFERController## NEW NEXT: " + next.getId() + " ####");
+						if (responseMove.prev.getId().equals(BufferController.me.getId())) {
+							BufferController.next = responseMove.next;
+							BufferController.cli.publishString("####BUFFERController## NEW NEXT: " + responseMove.next.getId() + " ####");
 
 						}
 

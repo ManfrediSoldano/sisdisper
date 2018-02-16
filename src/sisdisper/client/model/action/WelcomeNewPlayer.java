@@ -137,8 +137,7 @@ public class WelcomeNewPlayer extends Action {
 		}
 
 		// Se devo cambiare la mia formuazione:
-		if (sender.getId().equals(BufferController.next.getId())
-				&& !newPlayer.getId().equals(BufferController.me.getId())) {
+		if (sender.getId().equals(BufferController.next.getId())	&& !newPlayer.getId().equals(BufferController.me.getId())) {
 			System.out.println("##WelcomeNewPlayer### I'M THE NEXT ONE #####");
 			BufferController.next = this.next;
 			try {
