@@ -155,4 +155,12 @@ public class RestServer {
 			}
 		return null;
 	}
+	
+	public synchronized GetGames getAnalystGames() {
+
+
+		GetGames getgames = new GetGames();
+		getgames.setGames(games);
+		return getgames;
+	}
 }

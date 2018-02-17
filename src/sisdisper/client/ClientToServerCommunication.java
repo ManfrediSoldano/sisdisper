@@ -106,6 +106,105 @@ public class ClientToServerCommunication {
 		
 	}
 	
+	//ANALYST
+	
+	public ResponseAddToGame newAlayticalPLayer(String playerid, String ip){
+		try {
+
+			 ClientConfig config = new ClientConfig();
+			 
+			  Player player = new Player();
+			  player.setId(playerid);
+			  player.setIp(ip);
+		      Client client = ClientBuilder.newClient(config);
+		      WebTarget service = client.target(getBaseURI());
+		      ResponseAddToGame game_received = service.path("analytics").request(MediaType.APPLICATION_XML).post(Entity.entity(player,MediaType.APPLICATION_XML),ResponseAddToGame.class);
+		      return game_received;
+		   } catch (Exception e) {
+
+			e.printStackTrace();
+			return null;
+		  }
+		
+	}
+	
+
+	
+	public Game getAnalyticsOfGame(String gameID){
+		try {
+
+			 ClientConfig config = new ClientConfig();
+			 
+			 
+		      Client client = ClientBuilder.newClient(config);
+		      WebTarget service = client.target(getBaseURI());
+		      Game game = service.path("analytics").path(gameID).request().accept(MediaType.APPLICATION_XML).get(Game.class);
+		      
+		      return game;
+		  } catch (Exception e) {
+
+			e.printStackTrace();
+			return null;
+
+		  }
+	}
+	
+	public GetGames getGamesAnalytics(){
+		try {
+
+			 ClientConfig config = new ClientConfig();
+			 
+			 
+		      Client client = ClientBuilder.newClient(config);
+		      WebTarget service = client.target(getBaseURI());
+		      GetGames game = service.path("analytics").request().accept(MediaType.APPLICATION_XML).get(GetGames.class);
+		      
+		      return game;
+		  } catch (Exception e) {
+
+			e.printStackTrace();
+			return null;
+
+		  }
+	}
+	
+	public GetGames getAnalyticsOfPlayer(){
+		try {
+
+			 ClientConfig config = new ClientConfig();
+			 
+			 
+		      Client client = ClientBuilder.newClient(config);
+		      WebTarget service = client.target(getBaseURI());
+		      GetGames game = service.path("analytics").path("players").request().accept(MediaType.APPLICATION_XML).get(GetGames.class);
+		      
+		      return game;
+		  } catch (Exception e) {
+
+			e.printStackTrace();
+			return null;
+
+		  }
+	}
+
+	public String getLiveAnalytics(String playerID){
+		try {
+
+			 ClientConfig config = new ClientConfig();
+			 
+			 
+		      Client client = ClientBuilder.newClient(config);
+		      WebTarget service = client.target(getBaseURI());
+		      String game = service.path("analytics").path("live").path(playerID).request().accept(MediaType.APPLICATION_XML).get(String.class);
+		      return game;
+		      
+		  } catch (Exception e) {
+
+			e.printStackTrace();
+			return null;
+
+		  }
+	}
 	
 	
 	private static URI getBaseURI() {

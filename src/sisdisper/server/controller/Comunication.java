@@ -19,6 +19,7 @@ import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 
 import sisdisper.server.model.Game;
+import sisdisper.server.model.Player;
 import sisdisper.server.model.comunication.AddToGame;
 import sisdisper.server.model.comunication.GetGames;
 import sisdisper.server.model.comunication.ResponseAddToGame;
@@ -31,7 +32,7 @@ public class Comunication extends Observable {
 		RestServer.getIstance();
 		
 	}
-	  // This method is called if XML is request
+	  // Match 
 	  
 	  @GET
 	  @Path("/get")
@@ -69,10 +70,10 @@ public class Comunication extends Observable {
 	  //Analytics
 	  
 	  @POST
-	  @Path("/analytics/{userid}/{port}")
+	  @Path("/analytics")
 	  @Consumes(MediaType.APPLICATION_XML)
-	  public ResponseAddToGame newAnaliticalPLayer(@PathParam("userid") String userid, @PathParam("port") String ip){
-		  return RestServer.getIstance().newAnalyst(userid,ip);
+	  public ResponseAddToGame newAnaliticalPLayer(Player player){
+		  return RestServer.getIstance().newAnalyst(player.getId(),player.getIp());
 		  
 	  }
 	 
@@ -89,7 +90,7 @@ public class Comunication extends Observable {
 	  @Produces(MediaType.APPLICATION_XML)
 	  public GetGames getGames() {
 
-		return RestServer.getIstance().getGames();
+		return RestServer.getIstance().getAnalystGames();
 	  }
 	  
 	  @GET
@@ -97,7 +98,7 @@ public class Comunication extends Observable {
 	  @Produces(MediaType.APPLICATION_XML)
 	  public GetGames getPlayers() {
 
-		return RestServer.getIstance().getGames();
+		return RestServer.getIstance().getAnalystGames();
 	  }
 	  
 	  @GET
