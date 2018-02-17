@@ -130,11 +130,15 @@ public class UpdateYourNextPrev  extends Action  {
 
 		if (player.getId().equals(BufferController.me.getId())) {
 			BufferController.cli.returnBomb("You have gained " + (BufferController.mygame.getPlayerList().size() - alive.length) + " points");
+			int addPoint = BufferController.mygame.getPlayerList().size() - alive.length;
+			if (addPoint>3)
+				addPoint=3;
+			BufferController.points += addPoint;
 			
-			BufferController.points += BufferController.mygame.getPlayerList().size() - alive.length;
 			synchronized (BufferController.cli) {
 				BufferController.cli.notify();
 			}
+			
 			if (BufferController.points >= BufferController.winpoint) {
 				BufferController.cli.returnMove("YOU'RE THE WINNER!");
 				Winner winner = new Winner();
@@ -146,7 +150,7 @@ public class UpdateYourNextPrev  extends Action  {
 				}
 				
 
-				com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId(), Integer.toString(BufferController.me.getPoint()),"winner");
+				com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId(), Integer.toString(BufferController.points),"winner");
 				for (Client client : BufferController.clients) {
 					client.end = true;
 				}
@@ -194,7 +198,7 @@ public class UpdateYourNextPrev  extends Action  {
 						e.printStackTrace();
 					}
 				} else {
-					com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId(),Integer.toString(BufferController.me.getPoint()),"loser");
+					com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId(),Integer.toString(BufferController.points),"loser");
 				}
 			}
 

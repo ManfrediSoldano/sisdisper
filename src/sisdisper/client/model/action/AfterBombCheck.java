@@ -87,7 +87,7 @@ public class AfterBombCheck extends Action {
 
 			}
 
-			BufferController.cli.publishString("###AfterBombCheck# Update your nextprev: AfterBombCheck ####");
+			BufferController.cli.publishString("###AfterBombCheck# I'm the token peer, I'm asking others to update their next and prev ####");
 
 			UpdateYourNextPrev update = new UpdateYourNextPrev();
 			update.setPlayer(getPlayer());

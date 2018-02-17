@@ -65,7 +65,7 @@ public class MoveCom extends Action {
 				e.printStackTrace();
 			}
 			
-			com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId(),Integer.toString(BufferController.me.getPoint()),"loser");
+			com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId(),Integer.toString(BufferController.points),"loser");
 			
 			BufferController.end = true;
 			BufferController.alive=false;

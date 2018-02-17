@@ -152,17 +152,7 @@ public class GUI {
 			
 		}
 	}
-	public void bomb(int x, int y) {
-		if (x >= 0 && x <= dim && y >= 0 && y <= dim) {
-			table.setValueAt("O", y, x);
-		}
-	}
 	
-	public void explodedBomb(int x, int y) {
-		if (x >= 0 && x <= dim && y >= 0 && y <= dim) {
-			table.setValueAt("", y, x);
-		}
-	}
 
 	private class ButtonClickListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {

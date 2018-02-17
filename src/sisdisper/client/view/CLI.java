@@ -327,16 +327,6 @@ public class CLI implements Runnable {
 
 	}
 
-	public void bomb(int x, int y) {
-		if (gui.live) {
-			gui.bomb(x, y);
-		}
-	}
-
-	public void explodedBomb(int x, int y) {
-		if (gui.live) {
-			gui.explodedBomb(x, y);
-		}
-	}
+	
 
 }

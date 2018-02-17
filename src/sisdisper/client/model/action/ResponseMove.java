@@ -93,7 +93,7 @@ public class ResponseMove extends Action {
 						}
 						ClientToServerCommunication com = new ClientToServerCommunication();
 
-						com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId(),Integer.toString(BufferController.me.getPoint()),"winner");
+						com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId(),Integer.toString(BufferController.points),"winner");
 						for (Client client : BufferController.clients) {
 							client.end = true;
 						}

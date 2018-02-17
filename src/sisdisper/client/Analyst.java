@@ -156,6 +156,7 @@ public class Analyst {
 			long time = ((game.end.getTime()/60000) - (game.start.getTime()/60000));
 			System.out.println("Duration of this game "+time);
 		}
+		System.out.println("---------------------------");
 
 	}
 

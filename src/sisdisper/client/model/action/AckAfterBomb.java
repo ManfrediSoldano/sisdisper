@@ -38,12 +38,12 @@ public class AckAfterBomb extends Action {
 
 	public Boolean execute() {
 
-		System.out.println("####BUFFERController## RECEIVED AckAfterBomb ####");
+		System.out.println("####Ack after bomb## RECEIVED AckAfterBomb ####");
 
 		BufferController.ack.add(this);
 
 		if (BufferController.ack.size() == BufferController.mygame.getPlayerList().size() - 1) {
-			System.out.println("####BUFFERController## INside update ####");
+			System.out.println("####AckAfterBomb## Inside update ####");
 			updateNextPrev();
 			BufferController.ack = new ArrayList<AckAfterBomb>();
 		}
@@ -54,48 +54,51 @@ public class AckAfterBomb extends Action {
 		ClientToServerCommunication com = new ClientToServerCommunication();
 
 		UpdateYourNextPrev afc = BufferController.tokenUpdate;
+		
 		int i = 0;
 		ArrayList<Player> newPlayerList = new ArrayList<Player>();
+		
 		System.out.println(afc.alive.length);
+		
 		for (Player player : afc.alive) {
 			if (player != null) {
 
 				if (player.getId().equals(BufferController.me.getId())) {
 					if (afc.alive.length == 1) {
-						System.out.println("###Buffercontroller## I'm Alone after bomb!###");
+						System.out.println("###AckAfterBomb## I'm Alone after bomb!###");
 						BufferController.next = BufferController.me;
 						BufferController.prev = BufferController.me;
 					} else if (afc.alive.length == 2) {
-						System.out.println("###Buffercontroller## We're in two!###");
+						System.out.println("###AckAfterBomb## We're in two!###");
 						if (i == 0) {
 							BufferController.next = afc.get(1);
 							BufferController.prev = afc.get(1);
 							System.out
-									.println("###Buffercontroller## Seeting the next to:" + afc.get(1).getId() + "###");
+									.println("###AckAfterBomb## Seeting the next to:" + afc.get(1).getId() + "###");
 
 						} else {
 							BufferController.next = afc.get(0);
 							BufferController.prev = afc.get(0);
 							System.out
-									.println("###Buffercontroller## Seeting the next to:" + afc.get(0).getId() + "###");
+									.println("###AckAfterBomb## Seeting the next to:" + afc.get(0).getId() + "###");
 						}
 					} else {
-						System.out.println("###Buffercontroller## We're in more than two!###");
+						System.out.println("###AckAfterBomb## We're in more than two!###");
 						if (i == 0) {
 							BufferController.next = afc.get(1);
 							BufferController.prev = afc.get(afc.alive.length - 1);
 							System.out
-									.println("###Buffercontroller## Seeting the next to:" + afc.get(1).getId() + "###");
+									.println("###AckAfterBomb## Seeting the next to:" + afc.get(1).getId() + "###");
 						} else if (i == afc.alive.length - 1) {
 							BufferController.next = afc.get(0);
 							BufferController.prev = afc.get(i - 1);
 							System.out
-									.println("###Buffercontroller## Seeting the next to:" + afc.get(0).getId() + "###");
+									.println("###AckAfterBomb## Seeting the next to:" + afc.get(0).getId() + "###");
 						} else {
 							BufferController.next = afc.get(i + 1);
 							BufferController.prev = afc.get(i - 1);
 							System.out.println(
-									"###Buffercontroller## Seeting the next to:" + afc.get(i + 1).getId() + "###");
+									"###AckAfterBomb## Seeting the next to:" + afc.get(i + 1).getId() + "###");
 						}
 					}
 				}
@@ -124,7 +127,7 @@ public class AckAfterBomb extends Action {
 				}
 				
 
-				com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId(), Integer.toString(BufferController.me.getPoint()),"winner" );
+				com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId(), Integer.toString(BufferController.points),"winner" );
 				for (Client client : BufferController.clients) {
 					client.end = true;
 				}
@@ -140,7 +143,7 @@ public class AckAfterBomb extends Action {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				System.out.println("###Buffercontroller## Sent ackafterbomb to:" + afc.getToken() + "###");
+				System.out.println("###AckAfterBomb## Sent ackafterbomb to:" + afc.getToken() + "###");
 			
 		}
 
@@ -154,7 +157,7 @@ public class AckAfterBomb extends Action {
 				}
 			}
 			if (imAlive) {
-				System.out.println("###Buffercontroller## I'm the token man and i'm alive!###");
+				System.out.println("###AckAfterBomb## I'm the token man and i'm alive!###");
 				BufferController.tokenBlocker = false;
 				synchronized (BufferController.cli) {
 					BufferController.cli.notify();
@@ -163,21 +166,25 @@ public class AckAfterBomb extends Action {
 				token.execute();
 
 			} else {
-				System.out.println("###Buffercontroller## I'm the token man and i'm dead!###");
+				System.out.println("###AckAfterBomb## I'm the token man and i'm dead!###");
 				if (afc.alive.length > 0) {
 					try {
 						System.out
-								.println("###Buffercontroller## Sending the token to: " + afc.alive[0].getId() + "###");
+								.println("###AckAfterBomb## Sending the token to: " + afc.alive[0].getId() + "###");
 						PassToken passtoken = new PassToken();
 						passtoken.i = 1;
 						BufferController.server.sendMessageToPlayer(afc.alive[0], passtoken);
+						com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId(), Integer.toString(BufferController.points),"loser");
+						BufferController.alive=false;
+						
 					} catch (JsonProcessingException e) {
 						e.printStackTrace();
 					}
 				} else {
-					System.out.println("###Buffercontroller## I've died too!###");
+					System.out.println("###AckAfterBomb## The match ahs finished, I'm the token man, I'm dead and I was the last one!###");
 
-					com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId(), Integer.toString(BufferController.me.getPoint()),"loser");
+					com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId(), Integer.toString(BufferController.points),"loser");
+					BufferController.alive=false;
 				}
 			}
 

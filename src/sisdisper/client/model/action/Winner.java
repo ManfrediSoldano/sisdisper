@@ -24,7 +24,7 @@ public class Winner extends Action {
 		ClientToServerCommunication com = new ClientToServerCommunication();
 
 		BufferController.cli.returnMove(player.getId() + " HAS WON THIS MATCH!");
-		com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId(), Integer.toString(BufferController.me.getPoint()),"loser");
+		com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId(), Integer.toString(BufferController.points),"loser");
 		for (Client client : BufferController.clients) {
 			client.end = true;
 		}
