@@ -116,7 +116,12 @@ public class RestServer {
 							Set<String> nicks = waiters.keySet();  
 							
 							for (String n : nicks) {
+								if (!win.equals("")) {
 								waiters.get(n).resume("This game has just end: "+checkGame.getId()+" the match has ended after "+time+" minutes. The winner is "+ win);
+								} else {
+									waiters.get(n).resume("This game has just end: "+checkGame.getId()+" the match has ended after "+time+" minutes. With no winner. ");
+
+								}
 							}
 							
 						}
@@ -134,7 +139,7 @@ public class RestServer {
 	public synchronized ResponseAddToGame newAnalyst(String playerid, String ip) {
 		ResponseAddToGame response = new ResponseAddToGame();
 		for (Player player : analitics) {
-			if (player.getId() == playerid) {
+			if (player.getId().equals(playerid)) {
 				response.setType(ResponseAddToGame.Type.AREADY_EXIST);
 				return response;
 			}

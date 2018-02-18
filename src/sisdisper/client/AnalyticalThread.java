@@ -12,11 +12,19 @@ public class AnalyticalThread implements Runnable {
 	
 	@Override
 	public void run() {
-		
+		ClientToServerCommunication com = new ClientToServerCommunication();
+
 		while(end) {
-			ClientToServerCommunication com = new ClientToServerCommunication();
+			try {
 			String game = com.getLiveAnalytics(ID);
 			System.out.println(game);
+
+			}catch(Exception e){
+				//One Exception to rule them all, One Exception to find them,
+				//One Exception to bring them all and in the darkness bind them.
+				
+				//I don't need it anyway
+			}
 		}
 	}
 

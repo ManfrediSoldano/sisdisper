@@ -86,6 +86,7 @@ public class ResponseMove extends Action {
 						try {
 							for(Player aliveplayer: BufferController.mygame.getPlayerList()) {
 								BufferController.server.sendMessageToPlayer(aliveplayer,winner);
+								BufferController.alive = false;
 								}
 							
 						} catch (Exception e) {
