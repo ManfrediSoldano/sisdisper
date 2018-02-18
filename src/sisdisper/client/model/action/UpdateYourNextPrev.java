@@ -82,13 +82,14 @@ public class UpdateYourNextPrev  extends Action  {
 		ClientToServerCommunication com = new ClientToServerCommunication();
 		int i = 0;
 		ArrayList<Player> newPlayerList = new ArrayList<Player>();
-		
+		Boolean live=false;
 		System.out.println(alive.length);
 		
 		for (Player player : alive) {
 			if (player != null) {
 
 				if (player.getId().equals(BufferController.me.getId())) {
+					live=true;
 					if (alive.length == 1) {
 						BufferController.cli.publishString("##UpdateYourNextPrev# I'm Alone after bomb!###");
 						BufferController.next = BufferController.me;
@@ -163,6 +164,10 @@ public class UpdateYourNextPrev  extends Action  {
 			try {
 				BufferController.server.sendMessageToPlayer(token, new AckAfterBomb());
 				BufferController.cli.publishString("##UpdateYourNextPrev# Sent ackafterbomb to:" + token + "###");
+				if(!live) {
+					com.deleteMe(BufferController.me.getId(), BufferController.mygame.getId(),Integer.toString(BufferController.points),"loser");
+					BufferController.alive=false;
+				}
 			} catch (JsonProcessingException e) {
 				e.printStackTrace();
 			}

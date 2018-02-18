@@ -16,14 +16,14 @@ public class AnalyticalThread implements Runnable {
 
 		while(end) {
 			try {
+			//long polling with async call
 			String game = com.getLiveAnalytics(ID);
 			System.out.println(game);
-
 			}catch(Exception e){
 				//One Exception to rule them all, One Exception to find them,
 				//One Exception to bring them all and in the darkness bind them.
 				
-				//I don't need it anyway
+				//I won't need it anyway
 			}
 		}
 	}

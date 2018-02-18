@@ -82,7 +82,9 @@ public class Analyst {
 	private static void getLeaderboard() {
 		ClientToServerCommunication com = new ClientToServerCommunication();
 		ArrayList<Player> players = new ArrayList<Player>();
+
 		GetGames games = com.getAnalyticsOfPlayer();
+		
 		for(Game game : games.getGames()) {
 			if(!game.live) {
 				for (Player player:game.deadPlayers) {
